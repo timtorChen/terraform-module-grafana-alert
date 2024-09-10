@@ -1,0 +1,327 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+# TODO: change metrics rg to prometheus up{} metrics
+- name: metrics
+  interval_seconds: 300
+  rules:
+    - name: kube-metrics-no-data
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: ""
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: apps
+  interval_seconds: 300
+  rules:
+    - name: kube-pod-crashlooping
+      annotations:
+        summary: "Pod has been crash looping for 5 minutes"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}[5m])
+              == bool 1
+            instant: true
+      for: 5m
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      labels:
+        severity: warning
+    - name: kube-pod-not-ready
+      annotations:
+        summary: "Pod has been in non-ready state for 5 minutes"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}
+              == bool 1
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-deployment-generation-mismatch
+      annotations:
+        summary: "Deployment generation mismatch due to possible roll-back"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              kube_deployment_status_observed_generation 
+              != bool kube_deployment_metadata_generation
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-deployment-replicas-mismatch
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              (
+                kube_deployment_spec_replicas > bool kube_deployment_status_replicas_available
+              and 
+                changes(kube_deployment_status_replicas_updated[5m]) == 0
+              )
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-deployment-rollout-stuck
+      annotations:
+        summary: "Deployment rollout is not progressing"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              kube_deployment_status_condition{condition="Progressing", status="false"}
+              != bool 0
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-statefulset-replicas-mismatch
+    - name: kube-statefulset-generation-mismatch
+    - name: kube-statefulset-update-not-rolledout
+    - name: kube-daemonset-rollout-stuck
+    - name: kube-daemonset-not-scheduled
+    - name: kube-daemonset-mis-scheduled
+    - name: kube-container-waiting
+      annotations:
+        summary: Pod container waiting longer than 15 minutes
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: kube_pod_container_status_waiting_reason == bool 1
+            instant: true
+      for: 15m
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      labels:
+        severity: warning
+    - name: kube-job-not-completed
+    - name: kube-job-failed
+      annotations:
+        summary: "Job failed to complete"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: kube_job_status_failed == bool 1
+            instant: true
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-hpa-replicas-mismatch
+    - name: kube-hpa-maxed-out
+- name: resources
+  interval_seconds: 300
+  rules:
+    - name: kube-cpu-over-commit
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              sum(kube_pod_container_resource_requests{resource="cpu"})
+              /sum(kube_node_status_allocatable{resource="cpu"})
+              > bool 1
+            instant: true
+    - name: kube-cpu-quota-over-commit
+    - name: kube-cpu-throttling-high
+    - name: kube-memory-over-commit
+    - name: kube-memory-quota-over-commit
+    - name: kube-quota-almost-full
+    - name: kube-quota-fully-used
+- name: storage
+  interval_seconds: 60
+  rules:
+    - name: kube-persistentvolume-filling-up-warning
+      annotations:
+        summary: "PersistentVolume is filling up"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes 
+                < bool 0.25
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: warning
+    - name: kube-persistentvolume-filling-up-critical
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes 
+                < bool 0.15
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: critical
+    - name: kube-persistentvolume-inodes-filling-up-warning
+      annotations:
+        summary: "PersistentVolumeInodes are filling up"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < bool 0.25
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: warning
+    - name: kube-persistentvolume-inodes-filling-up-critical
+      annotations:
+        summary: "PersistentVolumeInodes are filling up"
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < bool 0.15
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: critical
+    - name: kube-persistentvolume-error
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              kube_persistentvolume_status_phase{phase=~"Failed|Pending"} 
+              > bool 0
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+- name: system
+  interval_seconds: 300
+  rules:
+    - name: kube-version-mismatch
+    - name: kube-client-error
+- name: kube-apiserver
+  interval_seconds: 300
+  rules:
+    - name: kube-client-certification-expiration-warning
+    - name: kube-client-certification-expiration-critical
+    - name: kube-aggregated-api-error
+    - name: kube-aggregated-api-down
+    - name: kubeapi-terminated-requests
+    - name: kubeapi-down
+- name: kubelet
+  interval_seconds: 300
+  rules:
+    - name: kube-node-not-ready
+    - name: kube-node-unreachable
+    - name: kube-node-readiness-flapping
+    - name: kubelet-too-may-pods
+    - name: kubelet-pod-startup-latency-high
+    - name: kubelet-client-certificate-expiration-warning
+    - name: kubelet-client-certificate-expiration-critical
+    - name: kubelet-client-certificate-renewal-error
+    - name: kubelet-server-certificate-expiration-warning
+    - name: kubelet-server-certificate-expiration-critical
+    - name: kubelet-server-certificate-renewal-error
+    - name: kubelet-down
+- name: kube-scheduler
+  interval_seconds: 300
+  rules:
+    - name: kube-scheduler-down
+- name: kube-controller-manager
+  interval_seconds: 300
+  rules:
+    - name: kube-controller-manager-down
+- name: kube-proxy
+  interval_seconds: 300
+  rules:
+    - name: kube-proxy-down

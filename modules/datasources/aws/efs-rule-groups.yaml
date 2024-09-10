@@ -1,0 +1,88 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+# TODO: ref_id unused in AWS
+# TODO: datas.model.statistic is redundant for query insight mode
+# description ref
+# https://www.datadoghq.com/blog/amazon-efs-metrics/
+- name: efs
+  interval_seconds: 300
+  rules:
+    - name: efs-low-burst-credits
+      annotations:
+        summary: "EFS is about to using out of burst credits"
+        description: ""
+      condition: D
+      datas:
+        - ref_id: A
+          model:
+            refId: A
+            metricQueryType: 1
+            metricEditorMode: 1
+            sqlExpression: SELECT AVG(BurstCreditBalance) FROM "AWS/EFS" GROUP BY FileSystemId
+            statistic: ""
+        - ref_id: B
+          datasource_uid: -100
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: min
+        - ref_id: C
+          datasource_uid: -100
+          model:
+            refId: C
+            type: math
+            expression: $B/(1024*1024*1024*1024)
+        - ref_id: D
+          datasource_uid: -100
+          model:
+            refId: D
+            type: threshold
+            expression: C
+            conditions:
+              - evaluator:
+                  params:
+                    - 0.5
+                    - 0
+                  type: lt
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels: &c
+        severity: critical
+    - name: "efs-reached-throughput-limit"
+      annotations:
+        summary: EFS is reached the throughput limit
+        description: ""
+      condition: C
+      datas:
+        - ref_id: A
+          model:
+            refId: A
+            metricQueryType: 1
+            metricEditorMode: 1
+            sqlExpression: SELECT AVG(PercentIOLimit) FROM "AWS/EFS" GROUP BY FileSystemId
+            statistic: ""
+        - ref_id: B
+          datasource_uid: -100
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: max
+        - ref_id: C
+          datasource_uid: -100
+          model:
+            refId: C
+            type: threshold
+            expression: B
+            conditions:
+              - evaluator:
+                  params:
+                    - 75
+                    - 0
+                  type: gt
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels: *c

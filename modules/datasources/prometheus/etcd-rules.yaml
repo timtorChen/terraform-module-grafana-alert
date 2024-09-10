@@ -1,0 +1,186 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+# TODO: finish desctiptions
+# TODO: check if metrics are dropped
+# etcd-insufficient-members
+# etcd-high-number-of-failed-grpc-requests
+# etcd-grpc-requests-slow
+# etcd-members-down
+- name: metrics
+  interval_seconds: 300
+  rules:
+    - name: etcd-metrics-no-data
+      annotations:
+        summary: "Etcd metrics returns NoData"
+        description: "The etcd metrics has been no data for 5 minutes. Please check if etcd or Prometheus is working."
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: "absent(etcd_cluster_version) or vector(0)"
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels: &c
+        severity: "critical"
+- name: server
+  interval_seconds: 60
+  rules:
+    - name: etcd-no-leader
+      annotations:
+        summary: Etcd cluster has no leader
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: etcd_server_has_leader{${etcd_selectors}} == bool 0
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "1m"
+      labels: *c
+    - name: etcd-high-number-of-leader-changes
+      annotations:
+        summary: "Etcd cluster has high number of leader changes"
+        description: "Etcd cluster has high number of leader change within the last 15 minutes. Frequent elections may be a sign of insufficient resources, high network latency, or disruptions by other components and should be investigated."
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              topk(1, etcd_server_leader_changes_seen_total{${etcd_selectors}} -  etcd_server_leader_changes_seen_total{${etcd_selectors}} offset 15m) 
+              > bool 4
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: etcd-high-number-of-failed-proposals
+      annotations:
+        summary: "Etcd cluster has high number of proposal failures"
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: rate(etcd_server_proposals_failed_total{${etcd_selectors}}[15m]) > bool 5
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+- name: network
+  interval_seconds: 300
+  rules:
+    - name: "etcd-member-communication-slow"
+      annotations:
+        summary: "Etcd cluster member communication is slow."
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{${etcd_selectors}}[5m]))
+              > bool 0.15
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+- name: disk
+  interval_seconds: 300
+  rules:
+    - name: etcd-high-fsync-duration
+      annotations:
+        summary: "Etcd cluster 99th percentile fsync durations are too high"
+        description: ""
+        documentation: https://etcd.io/docs/latest/faq/#what-does-the-etcd-warning-apply-entries-took-too-long-mean
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{${etcd_selectors}}[5m])) 
+              > bool 0.5
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels: *c
+    - name: etcd-high-commit-duration
+      annotations:
+        summary: "Etcd cluster 99th percentile commit durations are too high"
+        description: ""
+        documentation: https://etcd.io/docs/latest/faq/#what-does-the-etcd-warning-apply-entries-took-too-long-mean
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{${etcd_selectors}}[5m])) 
+              > bool 0.25
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels: *c
+- name: database
+  interval_seconds: 600
+  rules:
+    - name: "etcd-database-quota-low-space"
+      annotations:
+        summary: "Etcd cluster database is running full"
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              last_over_time(etcd_mvclc_db_total_size_in_bytes{${etcd_selectors}}[5m]) 
+              / last_over_time(etcd_server_quota_backend_bytes{${etcd_selectors}}[5m]) *100 
+              > bool 95
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "10m"
+      labels: *c
+    - name: "etcd-execessive-database-growth"
+      annotations:
+        summary: "Etcd cluster database growing very fast."
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              predict_linear(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[4h], 4*60*60) 
+              > bool etcd_server_quota_backend_bytes{${etcd_selectors}}
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "10m"
+      labels: &w
+        severity: warning
+    - name: "etcd-database-high-fragmentation-ratio"
+      annotations:
+        summary: "Etcd database size in use is less than 50% of the actual allocated"
+        description: ""
+        documentation: https://etcd.io/docs/latest/op-guide/maintenance/#defragmentation
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              predict_linear(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[4h], 4*60*60) 
+              > bool etcd_server_quota_backend_bytes{${etcd_selectors}}
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 10m
+      labels: *w

@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "annotations": {
+                "type": "object",
+                "properties": {
+                  "summary": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "summary",
+                  "description"
+                ]
+              },
+              "condition": {
+                "type": "string"
+              },
+              "datas": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ref_id": {
+                      "type": "string"
+                    },
+                    "model": {
+                      "type": "object",
+                      "properties": {
+                        "expr": {
+                          "type": "string"
+                        },
+                        "instant": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "expr",
+                        "instant"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ref_id",
+                    "model"
+                  ]
+                }
+              },
+              "no_data_state": {
+                "type": "string"
+              },
+              "exec_err_state": {
+                "type": "string"
+              },
+              "for": {
+                "type": "string"
+              },
+              "labels": {
+                "type": "object",
+                "properties": {
+                  "severity": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "severity"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "annotations",
+              "condition",
+              "datas",
+              "no_data_state",
+              "exec_err_state",
+              "for",
+              "labels"
+            ]
+          }
+        }
+      },
+      "required": [
+        "name",
+        "rules"
+      ]
+    }
+  }

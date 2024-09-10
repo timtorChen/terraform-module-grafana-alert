@@ -1,0 +1,154 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+- name: metrics
+  interval_seconds: 300
+  rules:
+    - name: smartctl-metrics-no-data
+      annotations:
+        summary: "Node metrics returns NoData"
+        description: "The smartctl-exporter metrics has been no data for 5 minutes. Please check if smartctl-exporter or Prometheus is working."
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: "absent(smartprom_smart_passed) or vector(0)"
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: "critical"
+- name: check
+  interval_seconds: 300
+  rules:
+    - name: device-smart-check-failed
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: smartprom_smart_passe{${smartctl_selectors}} == bool 0
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: temperature
+  interval_seconds: 300
+  rules:
+    - name: device-high-temperature
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: smartprom_temperature_celsius{${smartctl_selectors}} > bool 70
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: device-nvme-high-temperature
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: smartprom_temperature{${smartctl_selectors}} > bool 70
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+- name: lifetime
+  interval_seconds: 300
+  rules:
+    - name: "device-lifetime-warning"
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}} < bool 30
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: "device-nvme-liferime-warning"
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}}) < bool 30
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: "device-lifetime-critical"
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}} < bool 10
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+    - name: "device-nvme-lifetime-critical"
+      annotations:
+        summary: ""
+        description: ""
+      condition: A
+      datas:
+        - ref_id: A
+          model:
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}}) < bool 10
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: wearout
+  interval_seconds: 300
+  rules:
+    - name: "device-nvme-wearout"
+      annotations:
+        summary: ""
+        description: ""
+      condition: "A"
+      datas:
+        - ref_id: "A"
+          model:
+            expr: |
+              smartprom_available_spare{${smartctl_selectors}}
+              < bool smartprom_available_spare_threshold{${smartctl_selectors}}
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
