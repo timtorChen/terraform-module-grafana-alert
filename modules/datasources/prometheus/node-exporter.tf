@@ -5,10 +5,10 @@ module "node" {
   datasource_uid = var.config.datasource_uid
   annotations    = var.config.annotations
   labels         = var.config.labels
+  rule_groups    = var.config.node_rule_groups
   static_rule_groups = yamldecode(
     templatefile("${path.module}/node-exporter-rules.yaml",
       { node_selectors = join(",", compact(concat(var.config.selectors, var.config.node_selectors))) }
     )
   )
-  rule_groups = var.config.node_rule_groups
 }
