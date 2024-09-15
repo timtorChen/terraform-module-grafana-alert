@@ -46,28 +46,4 @@
       exec_err_state: "Error"
       for: "0s"
       labels:
-        severity: warning
-    - name: volsync-too-many-failure
-      annotations:
-        summary: "Volsync job(s) has failed more than 5 times"
-        description: >
-          The volsync job {{ $labels.obj_namespace }}/{{ $labels.obj_name }} is failed for more than 5 times.
-      condition: Z
-      datas:
-        - ref_id: "A"
-          model:
-            expr: volsync_missed_intervals_total{${volsync_selectors}}
-        - ref_id: "B"
-          model:
-            type: reduce
-            expression: "A"
-            reducer: last
-        - ref_id: "Z"
-          model:
-            type: math
-            expression: "$B >= 5"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "0s"
-      labels:
         severity: critical
