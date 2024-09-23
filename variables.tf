@@ -1,12 +1,12 @@
 variable "prometheus" {
   description = "Prometheus alerts"
   type        = any
-  default     = null
+  default     = {}
 }
 
 variable "aws" {
   description = "AWS alerts"
   type        = any
-  default     = null
+  default     = {}
 }
 
