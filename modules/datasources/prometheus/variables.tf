@@ -1,44 +1,128 @@
-variable "config" {
-  type = object({
-    datasource_uid = string
-    contact_point  = optional(string, null)
-    labels         = optional(map(string), {})
-    annotations    = optional(map(string), {})
-    selectors      = optional(list(string), [])
+variable "datasource_uid" {
+  type = string
+}
 
-    # etcd
-    enable_etcd_alert = optional(bool, false)
-    etcd_folder_name  = optional(string, "etcd")
-    etcd_rule_groups  = optional(any)
-    # query vars
-    etcd_selectors = optional(list(string), [])
+variable "contact_point" {
+  type    = string
+  default = null
+}
 
-    # ceph
-    enable_ceph_alert = optional(bool, false)
-    ceph_folder_name  = optional(string, "ceph")
-    ceph_rule_groups  = optional(any)
-    ## query vars
-    ceph_selectors = optional(list(string), [])
+variable "labels" {
+  type    = map(string)
+  default = {}
+}
 
-    # node-exporter
-    enable_node_alert = optional(bool, false)
-    node_folder_name  = optional(string, "node-exporter")
-    node_rule_groups  = optional(any)
-    ## query vars
-    node_selectors = optional(list(string), [])
+variable "annotations" {
+  type    = map(string)
+  default = {}
+}
 
-    # smartctl-exporter
-    enable_smartctl_alert = optional(bool, false)
-    smartctl_folder_name  = optional(string, "prometheus-smartctl")
-    smartctl_rule_groups  = optional(any)
-    # query vars
-    smartctl_selectors = optional(list(string), [])
+variable "selectors" {
+  type    = list(string)
+  default = []
+}
 
-    # kubernetes
-    enable_kubernetes_alert = optional(bool, false)
-    kubernetes_folder_name  = optional(string, "kubernetes")
-    kubernetes_rule_groups  = optional(any)
-    # query vars
-    kubernetes_selectors = optional(list(string), [])
-  })
+# etcd
+variable "enable_etcd_alert" {
+  type    = bool
+  default = false
+}
+
+variable "etcd_folder_name" {
+  type    = string
+  default = "etcd"
+}
+
+variable "etcd_rule_groups" {
+  type    = any
+  default = null
+}
+
+variable "etcd_selectors" {
+  type    = list(string)
+  default = []
+}
+
+# ceph
+variable "enable_ceph_alert" {
+  type    = bool
+  default = false
+}
+
+variable "ceph_folder_name" {
+  type    = string
+  default = "ceph"
+}
+
+variable "ceph_rule_groups" {
+  type    = any
+  default = null
+}
+
+variable "ceph_selectors" {
+  type    = list(string)
+  default = []
+}
+
+# node-exporter
+variable "enable_node_alert" {
+  type    = bool
+  default = false
+}
+
+variable "node_folder_name" {
+  type    = string
+  default = "node-exporter"
+}
+
+variable "node_rule_groups" {
+  type    = any
+  default = null
+}
+
+variable "node_selectors" {
+  type    = list(string)
+  default = []
+}
+
+# smartctl-exporter
+variable "enable_smartctl_alert" {
+  type    = bool
+  default = false
+}
+
+variable "smartctl_folder_name" {
+  type    = string
+  default = "prometheus-smartctl"
+}
+
+variable "smartctl_rule_groups" {
+  type    = any
+  default = null
+}
+
+variable "smartctl_selectors" {
+  type    = list(string)
+  default = []
+}
+
+# kubernetes
+variable "enable_kubernetes_alert" {
+  type    = bool
+  default = false
+}
+
+variable "kubernetes_folder_name" {
+  type    = string
+  default = "kubernetes"
+}
+
+variable "kubernetes_rule_groups" {
+  type    = any
+  default = null
+}
+
+variable "kubernetes_selectors" {
+  type    = list(string)
+  default = []
 }

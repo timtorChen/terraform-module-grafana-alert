@@ -1,14 +1,14 @@
 module "smartctl" {
-  count          = var.config.enable_smartctl_alert ? 1 : 0
+  count          = var.enable_smartctl_alert ? 1 : 0
   source         = "../../rule-groups"
-  folder_name    = var.config.smartctl_folder_name
-  datasource_uid = var.config.datasource_uid
-  annotations    = var.config.annotations
-  labels         = var.config.labels
-  rule_groups    = var.config.smartctl_rule_groups
+  folder_name    = var.smartctl_folder_name
+  datasource_uid = var.datasource_uid
+  annotations    = var.annotations
+  labels         = var.labels
+  rule_groups    = var.smartctl_rule_groups
   static_rule_groups = yamldecode(
     templatefile("${path.module}/prometheus-smartctl-rules.yaml",
-      { smartctl_selectors = join(",", compact(concat(var.config.selectors, var.config.smartctl_selectors))) }
+      { smartctl_selectors = join(",", compact(concat(var.selectors, var.smartctl_selectors))) }
     )
   )
 }

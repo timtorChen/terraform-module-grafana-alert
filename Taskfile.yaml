@@ -8,7 +8,7 @@ tasks:
     cmds:
       - pre-commit install
 
-  pre-commit:check:
-    desc: Check all pre-commit hooks
+  pre-commit:run:
+    desc: Run all pre-commit hooks
     cmds:
       - pre-commit run -a

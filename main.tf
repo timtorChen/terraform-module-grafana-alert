@@ -1,11 +1,46 @@
 module "prometheus" {
-  count  = var.prometheus != null ? 1 : 0
+  count  = var.prom_datasource_uid != null ? 1 : 0
   source = "./modules/datasources/prometheus"
-  config = var.prometheus
+
+  datasource_uid = var.prom_datasource_uid
+  contact_point  = var.prom_contact_point
+  labels         = var.prom_labels
+
+
+  enable_ceph_alert = var.enable_ceph_alert
+  ceph_folder_name  = var.ceph_folder_name
+  ceph_rule_groups  = var.ceph_rule_groups
+  ceph_selectors    = var.ceph_selectors
+
+  enable_etcd_alert = var.enable_etcd_alert
+  etcd_folder_name  = var.etcd_folder_name
+  etcd_rule_groups  = var.etcd_rule_groups
+  etcd_selectors    = var.etcd_selectors
+
+  enable_kubernetes_alert = var.enable_kubernetes_alert
+  kubernetes_folder_name  = var.kubernetes_folder_name
+  kubernetes_rule_groups  = var.kubernetes_rule_groups
+  kubernetes_selectors    = var.kubernetes_selectors
+
+  enable_node_alert = var.enable_node_alert
+  node_folder_name  = var.node_folder_name
+  node_rule_groups  = var.node_rule_groups
+  node_selectors    = var.node_selectors
+
+  enable_smartctl_alert = var.enable_smartctl_alert
+  smartctl_folder_name  = var.smartctl_folder_name
+  smartctl_rule_groups  = var.smartctl_rule_groups
+  smartctl_selectors    = var.smartctl_selectors
 }
 
 module "aws" {
-  count  = var.aws != null ? 1 : 0
+  count  = var.aws_datasource_uid != null ? 1 : 0
   source = "./modules/datasources/aws"
-  config = var.aws
+
+  datasource_uid   = var.aws_datasource_uid
+  contact_point    = var.aws_contact_point
+  labels           = var.aws_labels
+  enable_efs_alert = var.enable_efs_alert
+  efs_folder_name  = var.efs_folder_name
+  efs_rule_groups  = var.efs_rule_groups
 }
