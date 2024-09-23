@@ -1,15 +1,17 @@
 ---
 # yaml-language-server: $schema=../../rule-groups/schema.json
-- name: metrics
+- name: metrics-check
   interval_seconds: 300
   rules:
-    - name: smartctl-metrics-no-data
+    - name: smartctl-no-data
       annotations:
-        summary: "Node metrics returns NoData"
-        description: "The smartctl-exporter metrics has been no data for 5 minutes. Please check if smartctl-exporter or Prometheus is working."
-      condition: "A"
+        summary: "Smartctl-exporter metrics returns NoData"
+        description: >
+          Smartctl-exporter metrics has been no data for 5 minutes.
+          Please check if smartctl-exporter or Prometheus is working.
+      condition: "Z"
       datas:
-        - ref_id: "A"
+        - ref_id: "Z"
           model:
             expr: "absent(smartprom_smart_passed) or vector(0)"
             instant: true
@@ -25,12 +27,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_smart_passe{${smartctl_selectors}} == bool 0
-            instant: true
+            expr: smartprom_smart_passed{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B == 0"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -43,12 +53,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_temperature_celsius{${smartctl_selectors}} > bool 70
-            instant: true
+            expr: smartprom_temperature_celsius{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B > 70"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -58,12 +76,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_temperature{${smartctl_selectors}} > bool 70
-            instant: true
+            expr: smartprom_temperature{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B > 70"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -76,12 +102,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}} < bool 30
-            instant: true
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 30"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -91,12 +125,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: (100 - smartprom_percentage_used{${smartctl_selectors}}) < bool 30
-            instant: true
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 30"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -106,12 +148,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}} < bool 10
-            instant: true
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 10"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -121,12 +171,20 @@
       annotations:
         summary: ""
         description: ""
-      condition: A
+      condition: Z
       datas:
         - ref_id: A
           model:
-            expr: (100 - smartprom_percentage_used{${smartctl_selectors}}) < bool 10
-            instant: true
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 10"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"
@@ -139,14 +197,22 @@
       annotations:
         summary: ""
         description: ""
-      condition: "A"
+      condition: Z
       datas:
-        - ref_id: "A"
+        - ref_id: A
           model:
             expr: |
-              smartprom_available_spare{${smartctl_selectors}}
-              < bool smartprom_available_spare_threshold{${smartctl_selectors}}
-            instant: true
+              smartprom_available_spare{${smartctl_selectors}} 
+              - smartprom_available_spare_threshold{${smartctl_selectors}}
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B <= 0"
       no_data_state: "NoData"
       exec_err_state: "Error"
       for: "5m"

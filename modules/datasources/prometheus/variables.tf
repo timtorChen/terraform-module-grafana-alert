@@ -33,5 +33,12 @@ variable "config" {
     smartctl_rule_groups  = optional(any)
     # query vars
     smartctl_selectors = optional(list(string), [])
+
+    # kubernetes
+    enable_kubernetes_alert = optional(bool, false)
+    kubernetes_folder_name  = optional(string, "kubernetes")
+    kubernetes_rule_groups  = optional(any)
+    # query vars
+    kubernetes_selectors = optional(list(string), [])
   })
 }

@@ -5,6 +5,6 @@ module "efs" {
   datasource_uid     = var.config.datasource_uid
   annotations        = var.config.annotations
   labels             = var.config.labels
-  static_rule_groups = yamldecode(file("${path.module}/efs-rule-groups.yaml"))
   rule_groups        = var.config.efs_rule_groups
+  static_rule_groups = yamldecode(file("${path.module}/efs-rules.yaml"))
 }

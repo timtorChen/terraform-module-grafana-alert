@@ -34,13 +34,19 @@ resource "grafana_rule_group" "this" {
         try(var.rule_groups.rule_group["${each.key}"].pause, false) ||
         try(var.rule_groups.rule_group["${each.key}"].rule["${rule.key}"].pause, false)
       )
+      # TODO: Remove model modification in terraform, use yaml modification script instead.
       dynamic "data" {
         for_each = rule.value.datas
         iterator = data
         content {
-          ref_id         = data.value.ref_id
-          datasource_uid = try(data.value.datasource_uid, var.datasource_uid)
-          model          = jsonencode(data.value.model)
+          ref_id = data.value.ref_id
+          datasource_uid = (
+            try(data.value.model.type, null) == null ?
+            var.datasource_uid : local.expression_datasource_uid
+          )
+          model = jsonencode(merge(data.value.model, {
+            refId = data.value.ref_id,
+          }))
           relative_time_range {
             from = local.default_query_time_range.from
             to   = local.default_query_time_range.to
