@@ -1,9 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_grafana"></a> [grafana](#requirement\_grafana) | 3.7.0 |
+No requirements.
 
 ## Providers
 
