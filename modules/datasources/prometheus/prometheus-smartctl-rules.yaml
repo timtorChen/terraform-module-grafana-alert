@@ -7,12 +7,14 @@
       annotations:
         summary: "Smartctl-exporter metrics returns NoData"
         description: >
-          Smartctl-exporter metrics has been no data for 5 minutes.
-          Please check if smartctl-exporter or Prometheus is working.
+          Smartctl-exporter metrics has been no data for 5 minutes. Please check if smartctl-exporter or Prometheus is working.
+
       condition: "Z"
       datas:
-        - ref_id: "Z"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "Z"
           model:
+            refId: "Z"
             expr: "absent(smartprom_smart_passed) or vector(0)"
             instant: true
       no_data_state: "Alerting"
@@ -29,16 +31,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: smartprom_smart_passed{${smartctl_selectors}}
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B == 0"
       no_data_state: "NoData"
@@ -55,16 +63,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: smartprom_temperature_celsius{${smartctl_selectors}}
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B > 70"
       no_data_state: "NoData"
@@ -78,16 +92,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: smartprom_temperature{${smartctl_selectors}}
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B > 70"
       no_data_state: "NoData"
@@ -104,16 +124,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 30"
       no_data_state: "NoData"
@@ -127,16 +153,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 30"
       no_data_state: "NoData"
@@ -150,16 +182,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 10"
       no_data_state: "NoData"
@@ -173,16 +211,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 10"
       no_data_state: "NoData"
@@ -199,18 +243,22 @@
         description: ""
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
-            expr: |
-              smartprom_available_spare{${smartctl_selectors}} 
-              - smartprom_available_spare_threshold{${smartctl_selectors}}
-        - ref_id: B
+            refId: A
+            expr: "smartprom_available_spare{${smartctl_selectors}} \n- smartprom_available_spare_threshold{${smartctl_selectors}}\n"
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B <= 0"
       no_data_state: "NoData"

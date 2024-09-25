@@ -13,23 +13,31 @@
         description: ""
       condition: D
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             metricQueryType: 1
             metricEditorMode: 1
             sqlExpression: SELECT AVG(BurstCreditBalance) FROM "AWS/EFS" GROUP BY FileSystemId
             statistic: ""
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: min
-        - ref_id: C
+        - datasource_uid: -100
+          ref_id: C
           model:
+            refId: C
             type: math
             expression: $B/(1024*1024*1024*1024)
-        - ref_id: D
+        - datasource_uid: -100
+          ref_id: D
           model:
+            refId: D
             type: threshold
             expression: C
             conditions:
@@ -49,19 +57,25 @@
         description: ""
       condition: C
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             metricQueryType: 1
             metricEditorMode: 1
             sqlExpression: SELECT AVG(PercentIOLimit) FROM "AWS/EFS" GROUP BY FileSystemId
             statistic: ""
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: max
-        - ref_id: C
+        - datasource_uid: -100
+          ref_id: C
           model:
+            refId: C
             type: threshold
             expression: B
             conditions:

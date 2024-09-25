@@ -7,12 +7,14 @@
       annotations:
         summary: "Etcd metrics returns NoData"
         description: >
-          Etcd metrics has been no data for 5 minutes. 
-          Please check if etcd or Prometheus is working.
+          Etcd metrics has been no data for 5 minutes.  Please check if etcd or Prometheus is working.
+
       condition: "Z"
       datas:
-        - ref_id: "Z"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "Z"
           model:
+            refId: "Z"
             expr: "absent(etcd_cluster_version) or vector(0)"
             instant: true
       no_data_state: "Alerting"
@@ -28,18 +30,25 @@
         summary: "Etcd cluster has no leader"
         description: >
           Etcd cluster instance {{ $labels.instance }} has no leader.
+
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: "etcd_server_has_leader{${etcd_selectors}}"
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B == 0"
       no_data_state: "NoData"
@@ -51,21 +60,26 @@
       annotations:
         summary: "Etcd cluster has high number of leader changes"
         description: >
-          Etcd cluster has high number of leader change within the last 15 minutes.
-          Frequent elections may be a sign of insufficient resources, high network latency, or
-          disruptions by other components and should be investigated.
+          Etcd cluster has high number of leader change within the last 15 minutes. Frequent elections may be a sign of insufficient resources, high network latency, or disruptions by other components and should be investigated.
+
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: topk(1, changes(etcd_server_leader_changes_seen_total{${etcd_selectors}}[15m]))
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B >= 4"
       no_data_state: "NoData"
@@ -77,21 +91,27 @@
       annotations:
         summary: "Etcd cluster has high number of proposal failures"
         description: >
-          There is {{ $values.B.Value }} proposal failures
-          within the last 15 minutes on etcd instance {{ $labels.instance }}.
+          There is {{ $values.B.Value }} proposal failures within the last 15 minutes on etcd instance {{ $labels.instance }}.
+
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: |
               changes(etcd_server_proposals_failed_total{${etcd_selectors}}[15m])
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B > 5"
       no_data_state: "NoData"
@@ -106,21 +126,27 @@
       annotations:
         summary: "Etcd cluster member communication is slow."
         description: >
-          Etcd instance {{ $labels.instance }} communicate with
-          {{ $labels.To }} is taking {{ printf "%.2f" $values.B.Value }}s (99th percentile).
+          Etcd instance {{ $labels.instance }} communicate with {{ $labels.To }} is taking {{ printf "%.2f" $values.B.Value }}s (99th percentile).
+
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: |
               histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{${etcd_selectors}}[5m]))
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B > 0.15"
       no_data_state: "NoData"
@@ -136,20 +162,27 @@
         summary: "Etcd cluster 99th percentile fsync durations are too high"
         description: >
           Etcd instance {{ $labels.instance }} fsync duration is {{ $values.B.Value }}s (99th percentile).
+
         documentation: https://etcd.io/docs/latest/faq/#what-does-the-etcd-warning-apply-entries-took-too-long-mean
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: |
               histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{${etcd_selectors}}[5m]))
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B > 0.5"
       no_data_state: "NoData"
@@ -161,22 +194,28 @@
       annotations:
         summary: "Etcd cluster 99th percentile commit durations are too high"
         description: >
-          Etcd instance {{ $labels.instance }} 99th percentile
-          commit durations is {{ $values.B.Value }}s.
+          Etcd instance {{ $labels.instance }} 99th percentile commit durations is {{ $values.B.Value }}s.
+
         documentation: https://etcd.io/docs/latest/faq/#what-does-the-etcd-warning-apply-entries-took-too-long-mean
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
+            refId: "A"
             expr: |
               histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{${etcd_selectors}}[5m]))
-        - ref_id: "B"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B > 0.25"
       no_data_state: "NoData"
@@ -191,24 +230,26 @@
       annotations:
         summary: "Etcd cluster database is running full"
         description: >
-          Etcd instance {{ $labels.instance }} database size exceeds the defined
-          quota, please defrag or increase the quota as the writes to etcd will be
-          disabled when it is full.
+          Etcd instance {{ $labels.instance }} database size exceeds the defined quota, please defrag or increase the quota as the writes to etcd will be disabled when it is full.
+
       condition: "Z"
       datas:
-        - ref_id: "A"
+        - datasource_uid: ${datasource_uid}
+          ref_id: "A"
           model:
-            expr: |
-              last_over_time(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[5m]) 
-              /last_over_time(etcd_server_quota_backend_bytes{${etcd_selectors}}[5m]) 
-              *100
-        - ref_id: "B"
+            refId: "A"
+            expr: "last_over_time(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[5m]) \n/last_over_time(etcd_server_quota_backend_bytes{${etcd_selectors}}[5m]) \n*100\n"
+        - datasource_uid: -100
+          ref_id: "B"
           model:
+            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - ref_id: "Z"
+        - datasource_uid: -100
+          ref_id: "Z"
           model:
+            refId: "Z"
             type: math
             expression: "$B > 95"
       no_data_state: "NoData"
@@ -220,23 +261,28 @@
       annotations:
         summary: "Etcd cluster database growing very fast."
         description: >
-          Etcd instance {{ $labels.instance }} predicting running out of disk
-          space in the next four hours, based on write observations within the past
-          four hours.
+          Etcd instance {{ $labels.instance }} predicting running out of disk space in the next four hours, based on write observations within the past four hours.
+
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
+            refId: A
             expr: |
               etcd_server_quota_backend_bytes{${etcd_selectors}} -
               predict_linear(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[4h], 4*60*60)
-        - ref_id: B
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 0"
       no_data_state: "NoData"
@@ -248,25 +294,27 @@
       annotations:
         summary: "Etcd database size in use is less than 50% of the actual allocated"
         description: >
-          Etcd instance {{ $labels.instance }} database size is 
-          {{ humanizePercentage $values.B.Value }} of the actual
-          allocated disk space, please run defragmentation (e.g. etcdctl defrag)
-          to retrieve the unused fragmented disk space.
+          Etcd instance {{ $labels.instance }} database size is  {{ humanizePercentage $values.B.Value }} of the actual allocated disk space, please run defragmentation (e.g. etcdctl defrag) to retrieve the unused fragmented disk space.
+
         documentation: https://etcd.io/docs/latest/op-guide/maintenance/#defragmentation
       condition: Z
       datas:
-        - ref_id: A
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
           model:
-            expr: |
-              etcd_server_quota_backend_bytes{${etcd_selectors}} 
-              - predict_linear(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[4h], 4*60*60)
-        - ref_id: B
+            refId: A
+            expr: "etcd_server_quota_backend_bytes{${etcd_selectors}} \n- predict_linear(etcd_mvcc_db_total_size_in_bytes{${etcd_selectors}}[4h], 4*60*60)\n"
+        - datasource_uid: -100
+          ref_id: B
           model:
+            refId: B
             type: reduce
             expression: A
             reducer: last
-        - ref_id: Z
+        - datasource_uid: -100
+          ref_id: Z
           model:
+            refId: Z
             type: math
             expression: "$B < 0"
       no_data_state: "NoData"

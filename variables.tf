@@ -148,7 +148,8 @@ variable "smartctl_selectors" {
 
 ## aws module variables
 variable "aws_datasource_uid" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "aws_contact_point" {

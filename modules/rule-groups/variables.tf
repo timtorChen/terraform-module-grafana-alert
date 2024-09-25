@@ -7,10 +7,6 @@ variable "folder_name" {
   type = string
 }
 
-variable "datasource_uid" {
-  type = string
-}
-
 variable "labels" {
   type    = map(string)
   default = {}

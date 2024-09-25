@@ -28,7 +28,6 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_enable"></a> [enable](#input\_enable) | n/a | `bool` | `true` | no |
 | <a name="input_folder_name"></a> [folder\_name](#input\_folder\_name) | n/a | `string` | n/a | yes |
-| <a name="input_datasource_uid"></a> [datasource\_uid](#input\_datasource\_uid) | n/a | `string` | n/a | yes |
 | <a name="input_labels"></a> [labels](#input\_labels) | n/a | `map(string)` | `{}` | no |
 | <a name="input_annotations"></a> [annotations](#input\_annotations) | n/a | `map(string)` | `{}` | no |
 | <a name="input_static_rule_groups"></a> [static\_rule\_groups](#input\_static\_rule\_groups) | n/a | `any` | n/a | yes |
