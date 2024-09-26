@@ -1,17 +1,14 @@
 ---
 # yaml-language-server: $schema=../../rule-groups/schema.json
-# TODO: ref_id is unused in AWS
-# TODO: datas.model.statistic is redundant for query insight mode
-# description ref
-# https://www.datadoghq.com/blog/amazon-efs-metrics/
+# TODO: datas.model.statistic is redundant but required for query insight mode
 - name: efs
   interval_seconds: 300
   rules:
     - name: efs-low-burst-credits
       annotations:
         summary: "EFS is about to using out of burst credits"
-        description: ""
-      condition: D
+        description: "EFS burst credit is lower than 500 GB."
+      condition: Z
       datas:
         - datasource_uid: ${datasource_uid}
           ref_id: A
@@ -35,9 +32,9 @@
             type: math
             expression: $B/(1024*1024*1024*1024)
         - datasource_uid: -100
-          ref_id: D
+          ref_id: Z
           model:
-            refId: D
+            refId: Z
             type: threshold
             expression: C
             conditions:
@@ -53,8 +50,8 @@
         severity: critical
     - name: "efs-reached-throughput-limit"
       annotations:
-        summary: EFS is reached the throughput limit
-        description: ""
+        summary: EFS is about to reaching the throughput limit
+        description: "EFS is reached 75% of the throughput limit."
       condition: C
       datas:
         - datasource_uid: ${datasource_uid}
