@@ -15,7 +15,7 @@ resource "grafana_data_source" "aws" {
 
 module "grafana-alert" {
   source  = "timtorChen/grafana-alert/module"
-  version = "0.0.2-pre"
+  version = "~> 0.1.0"
 
   prom_datasource_uid = grafana_data_source.prometheus.uid
   enable_ceph_alert   = true
