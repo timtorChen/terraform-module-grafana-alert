@@ -1,0 +1,1123 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+# TODO: add kube-api-server, kube-scheduler, kube-controller-manager, and kube-proxy
+- name: metrics-check
+  interval_seconds: 300
+  rules:
+    - name: kubelet-no-data
+      annotations:
+        summary: "Kubelet metrics returns NoData"
+        description: >
+          The kubelet metrics has been no data for 5 minutes.  Please check if node or Prometheus is working.
+
+      condition: A
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "absent(kubernetes_build_info) or vector(0)"
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+    - name: kube-state-metrics-no-data
+      annotations:
+        summary: "Kube-state-metrics metrics returns NoData"
+        description: >
+          The kube-state-metrics metrics has been no data for 5 minutes. Please check if kube-state-metrics or Prometheus is working.
+
+      condition: A
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "absent(kube_node_info) or vector(0)"
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: apps
+  interval_seconds: 180
+  rules:
+    - name: kube-pod-not-healthy
+      annotations:
+        summary: "Pod is not healthy"
+        description: >
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in {{ $labels.phase }} state for more then 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_pod_status_phase{phase=~"Pending|Unknown|Failed"} > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_pod_status_phase{phase=~"Pending|Unknown|Failed"} > 0
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+    - name: kube-pod-not-ready
+      annotations:
+        summary: "Pod is not ready"
+        description: >
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} has been not ready for more than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "avg by (namespace, pod) (kube_pod_status_ready{condition=~\"false|unknown\"} > 0) \nunless avg by (namespace, pod) (kube_pod_status_phase{phase=\"Succeeded\"} > 0)\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "avg by (namespace, pod) (kube_pod_status_ready{condition=~\"false|unknown\"} > 0) \nunless avg by (namespace, pod) (kube_pod_status_phase{phase=\"Succeeded\"} > 0)\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+    - name: kube-pod-crashlooping
+      annotations:
+        summary: "Pod is crash looping"
+        description: >
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} on container {{ $labels.container }}  is CrashLoopBackOff for more than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+              or on() vector(0)
+            instant: true
+      for: 5m
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      labels:
+        severity: warning
+    - name: kube-container-waiting
+      annotations:
+        summary: "Container waiting too long"
+        description: >
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} on container {{ $labels.container}}  has been in waiting state for more than 15 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_pod_container_status_waiting_reason > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_pod_container_status_waiting_reason > 0
+              or on() vector(0)
+            instant: true
+      for: 15m
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      labels:
+        severity: warning
+    # TODO: test
+    - name: kube-deployment-generation-mismatch
+      annotations:
+        summary: "Deployment generation mismatch due to possible roll-back"
+        description: >
+          Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }}  does not match, this indicates that the Deployment has failed but has not been rolled back.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (kube_deployment_status_observed_generation != kube_deployment_metadata_generation)
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-deployment-replicas-mismatch
+      annotations:
+        summary: "Deployment has not matched the expected number of replicas."
+        description: >
+          Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has  not matched the expected number of replicas for longer than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "(\n  kube_deployment_spec_replicas != kube_deployment_status_replicas_available\nand \n  changes(kube_deployment_status_replicas_updated[5m]) == 0\n)\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "(\n  kube_deployment_spec_replicas != kube_deployment_status_replicas_available\nand \n  changes(kube_deployment_status_replicas_updated[5m]) == 0\n)\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-deployment-rollout-stuck
+      annotations:
+        summary: "Deployment rollout is not progressing"
+        description: >
+          Rollout of deployment {{ $labels.namespace }}/{{ $labels.deployment }} is not progressing for more than 5 minutes.
+
+      condition: A
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_deployment_status_condition{condition="Progressing", status=~"false|unknown"} > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: B
+          model:
+            refId: B
+            expr: |
+              kube_deployment_status_condition{condition="Progressing", status=~"false|unknown"} > 0
+              or on() vector(0)
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-statefulset-generation-mismatch
+      annotations:
+        summary: "StatefulSet generation mismatch due to possible roll-back"
+        description: >
+          StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_statefulset_status_observed_generation != kube_statefulset_metadata_generation
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_statefulset_status_observed_generation != kube_statefulset_metadata_generation
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-statefulset-replicas-mismatch
+      annotations:
+        summary: "StatefulSet has not matched the expected number of replicas."
+        description: >
+          StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched the expected number of replicas for longer than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "(\n  kube_statefulset_status_replicas != kube_statefulset_status_replicas_available\nand \n  changes(kube_statefulset_status_replicas_updated[5m]) == 0\n)\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "(\n  kube_statefulset_status_replicas != kube_statefulset_status_replicas_available\nand \n  changes(kube_statefulset_status_replicas_updated[5m]) == 0\n)\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-statefulset-update-not-rolledout
+      annotations:
+        summary: "StatefulSet update has not been rolled out."
+        description: >
+          StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }}  update has not been rolled out.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "(\n  max without (revision) \n  (kube_statefulset_status_current_revision unless kube_statefulset_status_update_revision)\nand\n  kube_statefulset_replicas != kube_statefulset_status_replicas_updated\nand\n  changes(kube_statefulset_status_replicas_updated[5m]) == 0\n)\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "(\n  max without (revision) \n  (kube_statefulset_status_current_revision unless kube_statefulset_status_update_revision)\nand\n  kube_statefulset_replicas != kube_statefulset_status_replicas_updated\nand\n  changes(kube_statefulset_status_replicas_updated[5m]) == 0\n)\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-daemonset-rollout-stuck
+      annotations:
+        summary: DaemonSet rollout is stuck.
+        description: >
+          DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }}  has not finished or progressed for at least 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "(\n  kube_daemonset_status_current_number_scheduled != kube_daemonset_status_desired_number_scheduled\nor \n  kube_daemonset_status_number_misscheduled != 0\nor\n  kube_daemonset_status_updated_number_scheduled != kube_daemonset_status_desired_number_scheduled\nor \n  kube_daemonset_status_number_available != kube_daemonset_status_desired_number_scheduled\nand\n  changes(kube_daemonset_status_updated_number_scheduled[5m]) == 0\n)\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "(\n  kube_daemonset_status_current_number_scheduled != kube_daemonset_status_desired_number_scheduled\nor \n  kube_daemonset_status_number_misscheduled != 0\nor\n  kube_daemonset_status_updated_number_scheduled != kube_daemonset_status_desired_number_scheduled\nor \n  kube_daemonset_status_number_available != kube_daemonset_status_desired_number_scheduled\nand\n  changes(kube_daemonset_status_updated_number_scheduled[5m]) == 0\n)\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-daemonset-not-scheduled
+      annotations:
+        summary: DaemonSet pods are not scheduled.
+        description: >
+          {{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_daemonset_status_desired_number_scheduled != kube_daemonset_status_current_number_scheduled
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_daemonset_status_desired_number_scheduled != kube_daemonset_status_current_number_scheduled
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-daemonset-mis-scheduled
+      annotations:
+        summary: "DaemonSet pods are misscheduled."
+        description: >
+          {{ $value.Z.Value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: kube_daemonset_status_number_misscheduled > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_daemonset_status_number_misscheduled > 0
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    # TODO: test
+    - name: kube-job-not-completed
+      annotations:
+        summary: "Job did not complete in time"
+        description: >
+          Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more than {{ humanizeDuration "43200" }} to complete.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (time() - kube_job_status_start_time) > 43200
+              and kube_job_status_active == 1
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (time() - kube_job_status_start_time) > 43200
+              and kube_job_status_active == 1
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-job-failed
+      annotations:
+        summary: "Job failed to complete"
+        description: >
+          Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete. Removing failed job after investigation should clear this alert.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_job_status_failed == 1
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_job_status_failed == 1
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-hpa-replicas-mismatch
+      annotations:
+        summary: "HPA has not matched desired number of replicas"
+        description: >
+          HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }} has not matched the desired number of replicas for longer than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (
+                kube_horizontalpodautoscaler_status_desired_replicas
+                != kube_horizontalpodautoscaler_status_current_replicas
+              and
+                kube_horizontalpodautoscaler_status_current_replicas
+                > kube_horizontalpodautoscaler_spec_min_replicas
+              and
+                kube_horizontalpodautoscaler_status_current_replicas
+                < kube_horizontalpodautoscaler_spec_max_replicas
+              and
+                changes(kube_horizontalpodautoscaler_status_current_replicas[5m]) == 0
+              )
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (
+                kube_horizontalpodautoscaler_status_desired_replicas
+                != kube_horizontalpodautoscaler_status_current_replicas
+              and
+                kube_horizontalpodautoscaler_status_current_replicas
+                > kube_horizontalpodautoscaler_spec_min_replicas
+              and
+                kube_horizontalpodautoscaler_status_current_replicas
+                < kube_horizontalpodautoscaler_spec_max_replicas
+              and
+                changes(kube_horizontalpodautoscaler_status_current_replicas[5m]) == 0
+              )
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-hpa-maxed-out
+      annotations:
+        summary: "HPA is running at max replicas"
+        description: >
+          HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} has been running at max replicas for longer than 5 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+- name: resources
+  interval_seconds: 300
+  rules:
+    - name: kube-node-not-ready
+      annotations:
+        summary: Node is not ready.
+        description: >
+          {{ $labels.node }} has been unready for more than 15 minutes.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_node_status_condition{condition="Ready",status=~"false|unknown"} == 1
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_node_status_condition{condition="Ready",status=~"false|unknown"} == 1
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-node-unreachable
+      annotations:
+        summary: Node is unreachable.
+        description: >
+          {{ $labels.node }} is unreachable and some workloads may be rescheduled.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "(\n  kube_node_spec_taint{key=\"node.kubernetes.io/unreachable\", effect=\"NoSchedule\"}\n  unless \n  ignoring(key,value) kube_node_spec_taint{key=~\"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn\"}\n) == 1\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "(\n  kube_node_spec_taint{key=\"node.kubernetes.io/unreachable\", effect=\"NoSchedule\"}\n  unless \n  ignoring(key,value) kube_node_spec_taint{key=~\"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn\"}\n) == 1\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-node-readiness-flapping
+      annotations:
+        summary: "Node readiness status is flapping"
+        description: >
+          The readiness status of node {{ $labels.node }} has changed  {{ $values.Z.Value }} times in the last 15 minutes.
+
+      condition: A
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              sum by (node) (changes(kube_node_status_condition{status="true",condition="Ready"}[15m])) > 2
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              sum by (node) (changes(kube_node_status_condition{status="true",condition="Ready"}[15m])) > 2
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 15m
+      labels:
+        severity: warning
+    - name: kube-cpu-over-commit
+      annotations:
+        summary: "Cluster has overcommitted CPU resource requests"
+        description: >
+          Cluster has overcommitted CPU resource requests for Pods by  {{ $values.Z.Value }} CPU shares and cannot tolerate node failure.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              sum(kube_pod_container_resource_requests{resource="cpu"})
+              - sum(kube_node_status_allocatable{resource="cpu"}) > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              sum(kube_pod_container_resource_requests{resource="cpu"})
+              - sum(kube_node_status_allocatable{resource="cpu"}) > 0
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-memory-over-commit
+      annotations:
+        summary: Cluster has overcommitted memory resource requests.
+        description: >
+          Cluster has overcommitted memory resource requests for Pods by {{ humanize $values.Z.Value }} bytes and cannot tolerate node failure.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              sum(kube_pod_container_resource_requests{resource="memory"})
+              - sum(kube_node_status_allocatable{resource="memory"}) > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              sum(kube_pod_container_resource_requests{resource="memory"})
+              - sum(kube_node_status_allocatable{resource="memory"}) > 0
+              or on() vector(0)
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-pod-out-of-capacity
+      annotations:
+        summary: "Kubernetes node out of pod capacity"
+        description: >
+          Node {{ $labels.node }} is out of pod capacity.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "sum by (node) ((kube_pod_status_phase == 1) * on(uid) group_left(node) kube_pod_info)\n/sum by (node) (kube_node_status_allocatable{resource=\"pods\"}) \n> 0.9\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              sum by (node) ((kube_pod_status_phase == 1) * on(uid) group_left(node) kube_pod_info)
+              /sum by (node) (kube_node_status_allocatable{resource="pods"}) > 0.9
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kube-quota-almost-full
+      annotations:
+        summary: Namespace quota is going to be full.
+        description: >
+          Namespace {{ $labels.namespace }} is using {{ humanizePercentage $values.Z.Value }}  of its {{ $labels.resource }} quota.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "kube_resourcequota{type=\"used\"} \n/ignoring(type) (kube_resourcequota{type=\"hard\"} > 0) > 0.9\n"
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: "kube_resourcequota{type=\"used\"} \n/ignoring(type) (kube_resourcequota{type=\"hard\"} > 0) > 0.9\nor on() vector(0)\n"
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+- name: storage
+  interval_seconds: 60
+  rules:
+    - name: kube-persistentvolume-filling-up-warning
+      annotations:
+        summary: PersistentVolume is filling up.
+        description: >
+          The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}  is only {{ humanizePercentage $values.Z.Value }} free.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes < 0.25
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes < 0.25
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: warning
+    - name: kube-persistentvolume-filling-up-critical
+      annotations:
+        summary: PersistentVolume is filling up.
+        description: >
+          The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}  is only {{ humanizePercentage $values.Z.Value }} free.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes < 0.15
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (
+                kubelet_volume_stats_available_bytes/kubelet_volume_stats_capacity_bytes < 0.15
+                and
+                kubelet_volume_stats_used_bytes > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+              or on() vector(0)
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: critical
+    - name: kube-persistentvolume-inodes-filling-up-warning
+      annotations:
+        summary: "PersistentVolumeInodes are filling up"
+        description: "The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} \n only has {{ humanizePercentage $values.Z.Value }} free inodes.\n"
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < 0.25
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < 0.25
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+              or on() vector(0)
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: warning
+    - name: kube-persistentvolume-inodes-filling-up-critical
+      annotations:
+        summary: "PersistentVolumeInodes are filling up"
+        description: "The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} \n only has {{ humanizePercentage $values.Z.Value }} free inodes.\n"
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < 0.15
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              (
+                kubelet_volume_stats_inodes_free/kubelet_volume_stats_inodes < 0.15
+                and
+                kubelet_volume_stats_inodes_used > 0
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_access_mode{access_mode="ReadOnlyMany"} == 1
+                unless on(namespace, persistentvolumeclaim)
+                kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
+              )
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 1m
+      labels:
+        severity: critical
+    - name: kube-persistentvolume-error
+      annotations:
+        summary: PersistentVolume is having issues with provisioning.
+        description: >
+          The persistent volume {{ $labels.persistentvolume }} is {{ $labels.phase }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kube_persistentvolume_status_phase{phase=~"Failed|Pending"} == 1
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kube_persistentvolume_status_phase{phase=~"Failed|Pending"} == 1
+              or on() vector(0)
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+- name: system
+  interval_seconds: 300
+  rules:
+    - name: kube-version-mismatch
+      annotations:
+        summary: "Kubernetes in different version"
+        description: >
+          Kubernetes core components running in different semantic version.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              avg(kubernetes_build_info) by (job, git_version, instance)
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              count(avg(kubernetes_build_info) by (job, git_version)) > 1
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+- name: kubelet
+  interval_seconds: 300
+  rules:
+    - name: kubelet-pod-startup-latency-high
+      annotations:
+        summary: Kubelet Pod startup latency is too high.
+        description: >
+          Kubelet Pod startup 99th percentile latency is {{ $values.Z.Value }} seconds on node {{ $labels.node }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{}[5m])) by (instance, le))
+              * on(instance) group_left(node) kubelet_node_name{} > 60
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{}[5m])) by (instance, le))
+              * on(instance) group_left(node) kubelet_node_name{} > 60
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kubelet-client-certificate-expiration-warning
+      annotations:
+        summary: "Kubelet client certificate is about to expire"
+        description: >
+          Client certificate for Kubelet on node {{ $labels.node }}  expires in {{ humanizeDuration $values.Z.Value }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kubelet_certificate_manager_client_ttl_seconds < 604800
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kubelet_certificate_manager_client_ttl_seconds < 604800
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kubelet-client-certificate-expiration-critical
+      annotations:
+        summary: "Kubelet client certificate is about to expire"
+        description: >
+          Client certificate for Kubelet on node {{ $labels.node }}  expires in {{ humanizeDuration $values.Z.Value }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kubelet_certificate_manager_client_ttl_seconds < 86400
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kubelet_certificate_manager_client_ttl_seconds < 86400
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+    - name: kubelet-client-certificate-renewal-error
+      annotations:
+        summary: "Kubelet has failed to renew its client certificate"
+        description: >
+          Kubelet on node {{ $labels.node }} has failed to renew its client certificate ({{ humanize $values.Z.Value }} errors in the last 5 minutes).
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              changes(kubelet_certificate_manager_client_expiration_renew_errors[5m]) > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              changes(kubelet_certificate_manager_client_expiration_renew_errors[5m]) > 0
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kubelet-server-certificate-expiration-warning
+      annotations:
+        summary: Kubelet server certificate is about to expire.
+        description: >
+          Server certificate for Kubelet on node {{ $labels.node }}  expires in {{ humanizeDuration $values.Z.Value }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kubelet_certificate_manager_server_ttl_seconds < 604800
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kubelet_certificate_manager_server_ttl_seconds < 604800
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning
+    - name: kubelet-server-certificate-expiration-critical
+      annotations:
+        summary: Kubelet server certificate is about to expire.
+        description: >
+          Server certificate for Kubelet on node {{ $labels.node }}  expires in in {{ humanizeDuration $values.Z.Value }}.
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              kubelet_certificate_manager_server_ttl_seconds < 86400
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              kubelet_certificate_manager_server_ttl_seconds < 86400
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: critical
+    - name: kubelet-server-certificate-renewal-error
+      annotations:
+        summary: Kubelet has failed to renew its server certificate.
+        description: >
+          Kubelet on node {{ $labels.node }} has failed to renew its server certificate ({{ $values.Z.Value }} errors in the last 5 minutes).
+
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: |
+              changes(kubelet_certificate_manager_client_expiration_renew_errors[5m]) > 0
+        - datasource_uid: ${datasource_uid}
+          ref_id: Z
+          model:
+            refId: Z
+            expr: |
+              changes(kubelet_certificate_manager_client_expiration_renew_errors[5m]) > 0
+              or on() vector(0)
+            instant: true
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: 5m
+      labels:
+        severity: warning

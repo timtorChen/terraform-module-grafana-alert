@@ -1,0 +1,268 @@
+---
+# yaml-language-server: $schema=../../rule-groups/schema.json
+- name: metrics-check
+  interval_seconds: 300
+  rules:
+    - name: smartctl-no-data
+      annotations:
+        summary: "Smartctl-exporter metrics returns NoData"
+        description: >
+          Smartctl-exporter metrics has been no data for 5 minutes. Please check if smartctl-exporter or Prometheus is working.
+
+      condition: "Z"
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: "Z"
+          model:
+            refId: "Z"
+            expr: "absent(smartprom_smart_passed) or vector(0)"
+            instant: true
+      no_data_state: "Alerting"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: "critical"
+- name: check
+  interval_seconds: 300
+  rules:
+    - name: device-smart-check-failed
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: smartprom_smart_passed{${smartctl_selectors}}
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B == 0"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: temperature
+  interval_seconds: 300
+  rules:
+    - name: device-high-temperature
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: smartprom_temperature_celsius{${smartctl_selectors}}
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B > 70"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: device-nvme-high-temperature
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: smartprom_temperature{${smartctl_selectors}}
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B > 70"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+- name: lifetime
+  interval_seconds: 300
+  rules:
+    - name: "device-lifetime-warning"
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B < 30"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: "device-nvme-liferime-warning"
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B < 30"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: "device-lifetime-critical"
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B < 10"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+    - name: "device-nvme-lifetime-critical"
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B < 10"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
+- name: wearout
+  interval_seconds: 300
+  rules:
+    - name: "device-nvme-wearout"
+      annotations:
+        summary: ""
+        description: ""
+      condition: Z
+      datas:
+        - datasource_uid: ${datasource_uid}
+          ref_id: A
+          model:
+            refId: A
+            expr: "smartprom_available_spare{${smartctl_selectors}} \n- smartprom_available_spare_threshold{${smartctl_selectors}}\n"
+        - datasource_uid: -100
+          ref_id: B
+          model:
+            refId: B
+            type: reduce
+            expression: A
+            reducer: last
+        - datasource_uid: -100
+          ref_id: Z
+          model:
+            refId: Z
+            type: math
+            expression: "$B <= 0"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: critical
