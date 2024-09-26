@@ -22,18 +22,25 @@ resource "grafana_rule_group" "this" {
       annotations = merge(
         rule.value.annotations,
         try(var.annotations, null),
-        try(var.rule_groups.annotations, null)
+        try(var.rule_groups.annotations, null),
+        try(var.rule_groups.rule_group["${each.key}"].annotations, null),
+        try(var.rule_groups.rule_group["${each.key}"].rule["${rule.key}"].annotations, null)
       )
       labels = merge(
         rule.value.labels,
         try(var.labels, null),
-        try(var.rule_groups.labels, null)
+        try(var.rule_groups.labels, null),
+        try(var.rule_groups.rule_group["${each.key}"].labels, null),
+        try(var.rule_groups.rule_group["${each.key}"].rule["${rule.key}"].labels, null)
       )
       is_paused = (
-        try(var.rule_groups.pause, false) ||
-        try(var.rule_groups.rule_group["${each.key}"].pause, false) ||
-        try(var.rule_groups.rule_group["${each.key}"].rule["${rule.key}"].pause, false)
+        try(var.rule_groups.rule_group["${each.key}"].rule["${rule.key}"].pause,
+          try(var.rule_groups.rule_group["${each.key}"].pause,
+            try(var.rule_groups.pause, false)
+          )
+        )
       )
+
       dynamic "data" {
         for_each = rule.value.datas
         iterator = data
