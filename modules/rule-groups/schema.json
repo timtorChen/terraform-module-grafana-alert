@@ -39,12 +39,21 @@
               "items": {
                 "type": "object",
                 "properties": {
+                  "datasource_uid": {
+                    "type": [
+                      "integer",
+                      "string"
+                    ]
+                  },
                   "ref_id": {
                     "type": "string"
                   },
                   "model": {
                     "type": "object",
                     "properties": {
+                      "refId": {
+                        "type": "string"
+                      },
                       "expr": {
                         "type": "string"
                       },
@@ -82,6 +91,7 @@
                   }
                 },
                 "required": [
+                  "datasource_uid",
                   "ref_id",
                   "model"
                 ]
