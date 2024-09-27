@@ -1,8 +1,3 @@
-variable "enable" {
-  type    = bool
-  default = true
-}
-
 variable "folder_name" {
   type = string
 }

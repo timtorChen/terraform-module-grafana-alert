@@ -1,12 +1,11 @@
 resource "grafana_folder" "this" {
-  count = var.enable ? 1 : 0
   title = var.folder_name
 }
 
 resource "grafana_rule_group" "this" {
   for_each           = { for group in var.static_rule_groups : group.name => group }
   name               = each.value.name
-  folder_uid         = grafana_folder.this[0].uid
+  folder_uid         = grafana_folder.this.uid
   interval_seconds   = each.value.interval_seconds
   disable_provenance = !try(each.value.enable_edit, false)
 
