@@ -1,11 +1,10 @@
 module "prometheus" {
-  count  = var.prom_datasource_uid != null ? 1 : 0
+  count  = local.enable_prometheus_module ? 1 : 0
   source = "./modules/datasources/prometheus"
 
   datasource_uid = var.prom_datasource_uid
   contact_point  = var.prom_contact_point
   labels         = var.prom_labels
-
 
   enable_ceph_alert = var.enable_ceph_alert
   ceph_folder_name  = var.ceph_folder_name
@@ -34,7 +33,7 @@ module "prometheus" {
 }
 
 module "aws" {
-  count  = var.aws_datasource_uid != null ? 1 : 0
+  count  = local.enable_aws_module ? 1 : 0
   source = "./modules/datasources/aws"
 
   datasource_uid   = var.aws_datasource_uid
@@ -43,4 +42,17 @@ module "aws" {
   enable_efs_alert = var.enable_efs_alert
   efs_folder_name  = var.efs_folder_name
   efs_rule_groups  = var.efs_rule_groups
+}
+
+locals {
+  enable_prometheus_module = (
+    var.enable_ceph_alert ||
+    var.enable_etcd_alert ||
+    var.enable_kubernetes_alert ||
+    var.enable_node_alert ||
+    var.enable_smartctl_alert
+  )
+  enable_aws_module = (
+    var.enable_efs_alert
+  )
 }
