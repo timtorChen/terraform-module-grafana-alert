@@ -7,7 +7,7 @@
     - name: kubelet-no-data
       annotations:
         summary: "Kubelet metrics returns NoData"
-        description: >
+        description: >-
           The kubelet metrics has been no data for 5 minutes. 
           Please check if node or Prometheus is working.
       condition: A
@@ -24,7 +24,7 @@
     - name: kube-state-metrics-no-data
       annotations:
         summary: "Kube-state-metrics metrics returns NoData"
-        description: >
+        description: >-
           The kube-state-metrics metrics has been no data for 5 minutes.
           Please check if kube-state-metrics or Prometheus is working.
       condition: A
@@ -44,7 +44,7 @@
     - name: kube-pod-not-healthy
       annotations:
         summary: "Pod is not healthy"
-        description: >
+        description: >-
           Pod {{ $labels.namespace }}/{{ $labels.pod }} has been
           in {{ $labels.phase }} state for more then 5 minutes.
       condition: Z
@@ -67,7 +67,7 @@
     - name: kube-pod-not-ready
       annotations:
         summary: "Pod is not ready"
-        description: >
+        description: >-
           Pod {{ $labels.namespace }}/{{ $labels.pod }} has been
           not ready for more than 5 minutes.
       condition: Z
@@ -92,7 +92,7 @@
     - name: kube-pod-crashlooping
       annotations:
         summary: "Pod is crash looping"
-        description: >
+        description: >-
           Pod {{ $labels.namespace }}/{{ $labels.pod }} on container {{ $labels.container }} 
           is CrashLoopBackOff for more than 5 minutes.
       condition: Z
@@ -115,7 +115,7 @@
     - name: kube-container-waiting
       annotations:
         summary: "Container waiting too long"
-        description: >
+        description: >-
           Pod {{ $labels.namespace }}/{{ $labels.pod }} on container {{ $labels.container}} 
           has been in waiting state for more than 15 minutes.
       condition: Z
@@ -139,7 +139,7 @@
     - name: kube-deployment-generation-mismatch
       annotations:
         summary: "Deployment generation mismatch due to possible roll-back"
-        description: >
+        description: >-
           Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }} 
           does not match, this indicates that the Deployment has failed but has not
           been rolled back.
@@ -163,7 +163,7 @@
     - name: kube-deployment-replicas-mismatch
       annotations:
         summary: "Deployment has not matched the expected number of replicas."
-        description: >
+        description: >-
           Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has 
           not matched the expected number of replicas for longer than 5 minutes.
       condition: Z
@@ -194,7 +194,7 @@
     - name: kube-deployment-rollout-stuck
       annotations:
         summary: "Deployment rollout is not progressing"
-        description: >
+        description: >-
           Rollout of deployment {{ $labels.namespace }}/{{ $labels.deployment }}
           is not progressing for more than 5 minutes.
       condition: A
@@ -216,7 +216,7 @@
     - name: kube-statefulset-generation-mismatch
       annotations:
         summary: "StatefulSet generation mismatch due to possible roll-back"
-        description: >
+        description: >-
           StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }}
           does not match, this indicates that the StatefulSet has failed but has
           not been rolled back.
@@ -240,7 +240,7 @@
     - name: kube-statefulset-replicas-mismatch
       annotations:
         summary: "StatefulSet has not matched the expected number of replicas."
-        description: >
+        description: >-
           StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has
           not matched the expected number of replicas for longer than 5 minutes.
       condition: Z
@@ -271,7 +271,7 @@
     - name: kube-statefulset-update-not-rolledout
       annotations:
         summary: "StatefulSet update has not been rolled out."
-        description: >
+        description: >-
           StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} 
           update has not been rolled out.
       condition: Z
@@ -308,7 +308,7 @@
     - name: kube-daemonset-rollout-stuck
       annotations:
         summary: DaemonSet rollout is stuck.
-        description: >
+        description: >-
           DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} 
           has not finished or progressed for at least 5 minutes.
       condition: Z
@@ -351,7 +351,7 @@
     - name: kube-daemonset-not-scheduled
       annotations:
         summary: DaemonSet pods are not scheduled.
-        description: >
+        description: >-
           {{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }}
           are not scheduled.
       condition: Z
@@ -374,7 +374,7 @@
     - name: kube-daemonset-mis-scheduled
       annotations:
         summary: "DaemonSet pods are misscheduled."
-        description: >
+        description: >-
           {{ $value.Z.Value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }}
           are running where they are not supposed to run.
       condition: Z
@@ -397,7 +397,7 @@
     - name: kube-job-not-completed
       annotations:
         summary: "Job did not complete in time"
-        description: >
+        description: >-
           Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more
           than {{ humanizeDuration "43200" }} to complete.
       condition: Z
@@ -422,7 +422,7 @@
     - name: kube-job-failed
       annotations:
         summary: "Job failed to complete"
-        description: >
+        description: >-
           Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.
           Removing failed job after investigation should clear this alert.
       condition: Z
@@ -445,7 +445,7 @@
     - name: kube-hpa-replicas-mismatch
       annotations:
         summary: "HPA has not matched desired number of replicas"
-        description: >
+        description: >-
           HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }}
           has not matched the desired number of replicas for longer than 5 minutes.
       condition: Z
@@ -490,7 +490,7 @@
     - name: kube-hpa-maxed-out
       annotations:
         summary: "HPA is running at max replicas"
-        description: >
+        description: >-
           HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }}
           has been running at max replicas for longer than 5 minutes.
       condition: Z
@@ -516,7 +516,7 @@
     - name: kube-node-not-ready
       annotations:
         summary: Node is not ready.
-        description: >
+        description: >-
           {{ $labels.node }} has been unready for more than 15 minutes.
       condition: Z
       datas:
@@ -538,7 +538,7 @@
     - name: kube-node-unreachable
       annotations:
         summary: Node is unreachable.
-        description: >
+        description: >-
           {{ $labels.node }} is unreachable and some workloads may be rescheduled.
       condition: Z
       datas:
@@ -568,7 +568,7 @@
     - name: kube-node-readiness-flapping
       annotations:
         summary: "Node readiness status is flapping"
-        description: >
+        description: >-
           The readiness status of node {{ $labels.node }} has changed 
           {{ $values.Z.Value }} times in the last 15 minutes.
       condition: A
@@ -591,7 +591,7 @@
     - name: kube-cpu-over-commit
       annotations:
         summary: "Cluster has overcommitted CPU resource requests"
-        description: >
+        description: >-
           Cluster has overcommitted CPU resource requests for Pods by 
           {{ $values.Z.Value }} CPU shares and cannot tolerate node failure.
       condition: Z
@@ -616,7 +616,7 @@
     - name: kube-memory-over-commit
       annotations:
         summary: Cluster has overcommitted memory resource requests.
-        description: >
+        description: >-
           Cluster has overcommitted memory resource requests for Pods by
           {{ humanize $values.Z.Value }} bytes and cannot tolerate node failure.
       condition: Z
@@ -640,7 +640,7 @@
     - name: kube-pod-out-of-capacity
       annotations:
         summary: "Kubernetes node out of pod capacity"
-        description: >
+        description: >-
           Node {{ $labels.node }} is out of pod capacity.
       condition: Z
       datas:
@@ -666,7 +666,7 @@
     - name: kube-quota-almost-full
       annotations:
         summary: Namespace quota is going to be full.
-        description: >
+        description: >-
           Namespace {{ $labels.namespace }} is using {{ humanizePercentage $values.Z.Value }} 
           of its {{ $labels.resource }} quota.
       condition: Z
@@ -694,7 +694,7 @@
     - name: kube-persistentvolume-filling-up-warning
       annotations:
         summary: PersistentVolume is filling up.
-        description: >
+        description: >-
           The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} 
           is only {{ humanizePercentage $values.Z.Value }} free.
       condition: Z
@@ -733,7 +733,7 @@
     - name: kube-persistentvolume-filling-up-critical
       annotations:
         summary: PersistentVolume is filling up.
-        description: >
+        description: >-
           The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} 
           is only {{ humanizePercentage $values.Z.Value }} free.
       condition: Z
@@ -771,7 +771,7 @@
     - name: kube-persistentvolume-inodes-filling-up-warning
       annotations:
         summary: "PersistentVolumeInodes are filling up"
-        description: >
+        description: >-
           The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} 
            only has {{ humanizePercentage $values.Z.Value }} free inodes.
       condition: Z
@@ -809,7 +809,7 @@
     - name: kube-persistentvolume-inodes-filling-up-critical
       annotations:
         summary: "PersistentVolumeInodes are filling up"
-        description: >
+        description: >-
           The PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} 
            only has {{ humanizePercentage $values.Z.Value }} free inodes.
       condition: Z
@@ -848,7 +848,7 @@
     - name: kube-persistentvolume-error
       annotations:
         summary: PersistentVolume is having issues with provisioning.
-        description: >
+        description: >-
           The persistent volume {{ $labels.persistentvolume }} is {{ $labels.phase }}.
       condition: Z
       datas:
@@ -872,7 +872,7 @@
     - name: kube-version-mismatch
       annotations:
         summary: "Kubernetes in different version"
-        description: >
+        description: >-
           Kubernetes core components running in different semantic version.
       condition: Z
       datas:
@@ -897,7 +897,7 @@
     - name: kubelet-pod-startup-latency-high
       annotations:
         summary: Kubelet Pod startup latency is too high.
-        description: >
+        description: >-
           Kubelet Pod startup 99th percentile latency is
           {{ $values.Z.Value }} seconds on node {{ $labels.node }}.
       condition: Z
@@ -922,7 +922,7 @@
     - name: kubelet-client-certificate-expiration-warning
       annotations:
         summary: "Kubelet client certificate is about to expire"
-        description: >
+        description: >-
           Client certificate for Kubelet on node {{ $labels.node }} 
           expires in {{ humanizeDuration $values.Z.Value }}.
       condition: Z
@@ -945,7 +945,7 @@
     - name: kubelet-client-certificate-expiration-critical
       annotations:
         summary: "Kubelet client certificate is about to expire"
-        description: >
+        description: >-
           Client certificate for Kubelet on node {{ $labels.node }} 
           expires in {{ humanizeDuration $values.Z.Value }}.
       condition: Z
@@ -968,7 +968,7 @@
     - name: kubelet-client-certificate-renewal-error
       annotations:
         summary: "Kubelet has failed to renew its client certificate"
-        description: >
+        description: >-
           Kubelet on node {{ $labels.node }} has failed to renew its client
           certificate ({{ humanize $values.Z.Value }} errors in the last 5 minutes).
       condition: Z
@@ -991,7 +991,7 @@
     - name: kubelet-server-certificate-expiration-warning
       annotations:
         summary: Kubelet server certificate is about to expire.
-        description: >
+        description: >-
           Server certificate for Kubelet on node {{ $labels.node }} 
           expires in {{ humanizeDuration $values.Z.Value }}.
       condition: Z
@@ -1014,7 +1014,7 @@
     - name: kubelet-server-certificate-expiration-critical
       annotations:
         summary: Kubelet server certificate is about to expire.
-        description: >
+        description: >-
           Server certificate for Kubelet on node {{ $labels.node }} 
           expires in in {{ humanizeDuration $values.Z.Value }}.
       condition: Z
@@ -1037,7 +1037,7 @@
     - name: kubelet-server-certificate-renewal-error
       annotations:
         summary: Kubelet has failed to renew its server certificate.
-        description: >
+        description: >-
           Kubelet on node {{ $labels.node }} has failed to renew its server
           certificate ({{ $values.Z.Value }} errors in the last 5 minutes).
       condition: Z

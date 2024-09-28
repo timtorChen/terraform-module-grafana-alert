@@ -3,10 +3,10 @@
 - name: metrics-check
   interval_seconds: 300
   rules:
-    - name: smartctl-no-data
+    - name: "smartprom-no-data"
       annotations:
         summary: "Smartctl-exporter metrics returns NoData"
-        description: >
+        description: >-
           Smartctl-exporter metrics has been no data for 5 minutes.
           Please check if smartctl-exporter or Prometheus is working.
       condition: "Z"
@@ -23,10 +23,12 @@
 - name: check
   interval_seconds: 300
   rules:
-    - name: device-smart-check-failed
+    - name: "smartprom-device-smart-check-failed"
       annotations:
-        summary: ""
-        description: ""
+        summary: "Device SMART check failed"
+        description: >-
+          SMART check is failed
+          for drive {{ $labels.drive }} model {{ $labels.model_name }} on instance {{ $labels.nodename }}.
       condition: Z
       datas:
         - ref_id: A
@@ -49,38 +51,20 @@
 - name: temperature
   interval_seconds: 300
   rules:
-    - name: device-high-temperature
+    - name: "smartprom-device-high-temperature"
       annotations:
-        summary: ""
-        description: ""
+        summary: "Device is under high temperature"
+        description: >-
+          Temperatue exceeds 70°C degree
+          for drive {{ $labels.drive }} model {{ $labels.model_name }} on instance {{ $labels.nodename }}.
       condition: Z
       datas:
         - ref_id: A
           model:
-            expr: smartprom_temperature_celsius{${smartctl_selectors}}
-        - ref_id: B
-          model:
-            type: reduce
-            expression: A
-            reducer: last
-        - ref_id: Z
-          model:
-            type: math
-            expression: "$B > 70"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "5m"
-      labels:
-        severity: warning
-    - name: device-nvme-high-temperature
-      annotations:
-        summary: ""
-        description: ""
-      condition: Z
-      datas:
-        - ref_id: A
-          model:
-            expr: smartprom_temperature{${smartctl_selectors}}
+            expr: |
+              smartprom_temperature_celsius{${smartctl_selectors}}
+              or
+              smartprom_temperature{${smartctl_selectors}}
         - ref_id: B
           model:
             type: reduce
@@ -98,111 +82,77 @@
 - name: lifetime
   interval_seconds: 300
   rules:
-    - name: "device-lifetime-warning"
+    - name: "smartprom-device-lifetime-warning"
       annotations:
-        summary: ""
-        description: ""
-      condition: Z
-      datas:
-        - ref_id: A
-          model:
-            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
-        - ref_id: B
-          model:
-            type: reduce
-            expression: A
-            reducer: last
-        - ref_id: Z
-          model:
-            type: math
-            expression: "$B < 30"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "5m"
-      labels:
-        severity: warning
-    - name: "device-nvme-liferime-warning"
-      annotations:
-        summary: ""
-        description: ""
-      condition: Z
-      datas:
-        - ref_id: A
-          model:
-            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
-        - ref_id: B
-          model:
-            type: reduce
-            expression: A
-            reducer: last
-        - ref_id: Z
-          model:
-            type: math
-            expression: "$B < 30"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "5m"
-      labels:
-        severity: warning
-    - name: "device-lifetime-critical"
-      annotations:
-        summary: ""
-        description: ""
-      condition: Z
-      datas:
-        - ref_id: A
-          model:
-            expr: smartprom_percent_lifetime_remain{${smartctl_selectors}}
-        - ref_id: B
-          model:
-            type: reduce
-            expression: A
-            reducer: last
-        - ref_id: Z
-          model:
-            type: math
-            expression: "$B < 10"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "5m"
-      labels:
-        severity: critical
-    - name: "device-nvme-lifetime-critical"
-      annotations:
-        summary: ""
-        description: ""
-      condition: Z
-      datas:
-        - ref_id: A
-          model:
-            expr: (100 - smartprom_percentage_used{${smartctl_selectors}})
-        - ref_id: B
-          model:
-            type: reduce
-            expression: A
-            reducer: last
-        - ref_id: Z
-          model:
-            type: math
-            expression: "$B < 10"
-      no_data_state: "NoData"
-      exec_err_state: "Error"
-      for: "5m"
-      labels:
-        severity: critical
-- name: wearout
-  interval_seconds: 300
-  rules:
-    - name: "device-nvme-wearout"
-      annotations:
-        summary: ""
-        description: ""
+        summary: "Device remaining lifetime is low"
+        description: >-
+          Remaing lifetime is below 30
+          for drive {{ $labels.drive }} model {{ $labels.model_name }} on instance {{ $labels.nodename }}.
       condition: Z
       datas:
         - ref_id: A
           model:
             expr: |
-              smartprom_available_spare{${smartctl_selectors}} 
+              smartprom_percent_lifetime_remain{${smartctl_selectors}}
+              or
+              (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 30"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+    - name: "smartprom-device-lifetime-critical"
+      annotations:
+        summary: "Device remaining lifetime is low"
+        description: >-
+          Remaing lifetime is below 10
+          for drive {{ $labels.drive }} model {{ $labels.model_name }} on instance {{ $labels.nodename }}.
+      condition: Z
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              smartprom_percent_lifetime_remain{${smartctl_selectors}}
+              or
+              (100 - smartprom_percentage_used{${smartctl_selectors}})
+        - ref_id: B
+          model:
+            type: reduce
+            expression: A
+            reducer: last
+        - ref_id: Z
+          model:
+            type: math
+            expression: "$B < 10"
+      no_data_state: "NoData"
+      exec_err_state: "Error"
+      for: "5m"
+      labels:
+        severity: warning
+- name: wearout
+  interval_seconds: 300
+  rules:
+    - name: "smartprom-device-nvme-wearout"
+      annotations:
+        summary: "NVMe device is wearing out"
+        description: >-
+          Nvme device is using out of spare block
+          for drive {{ $labels.drive }} model {{ $labels.model_name }} on instance {{ $labels.nodename }}.
+      condition: Z
+      datas:
+        - ref_id: A
+          model:
+            expr: |
+              smartprom_available_spare{${smartctl_selectors}}
               - smartprom_available_spare_threshold{${smartctl_selectors}}
         - ref_id: B
           model:
