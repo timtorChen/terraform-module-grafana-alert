@@ -7,14 +7,12 @@
       annotations:
         summary: "Node-exporter metrics returns NoData"
         description: >
-          Node-exporter metrics has been no data for 5 minutes. Please check if node-exporter or Prometheus is working.
-
+          Node-exporter metrics has been no data for 5 minutes.
+          Please check if node-exporter or Prometheus is working.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             expr: "absent(node_uname_info) or vector(0)"
             instant: true
       no_data_state: "Alerting"
@@ -29,26 +27,27 @@
       annotations:
         summary: "Filesystem has less than 25% space left"
         description: >
-          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.nodename }} has only {{ printf "%.2f" $value }}% available space left.
-
+          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }},
+          at {{ $labels.nodename }} has only {{ printf "%.2f" $value }}% available space left.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
-            expr: "(\n  node_filesystem_avail_bytes{fstype!=\"\",mountpoint!=\"\", ${node_selectors}} \n  /node_filesystem_size_bytes{fstype!=\"\",mountpoint!=\"\", ${node_selectors}}\n  *100\n  unless node_filesystem_readonly{fstype!=\"\",mountpoint!=\"\", ${node_selectors}} == 1\n)\n* on(instance) group_left(nodename) node_uname_info{${node_selectors}}\n"
-        - datasource_uid: -100
-          ref_id: B
+            expr: |
+              (
+                node_filesystem_avail_bytes{fstype!="",mountpoint!="", ${node_selectors}} 
+                /node_filesystem_size_bytes{fstype!="",mountpoint!="", ${node_selectors}}
+                *100
+                unless node_filesystem_readonly{fstype!="",mountpoint!="", ${node_selectors}} == 1
+              )
+              * on(instance) group_left(nodename) node_uname_info{${node_selectors}}
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B < 25"
       no_data_state: "NoData"
@@ -60,26 +59,28 @@
       annotations:
         summary: "Filesystem has less than 5% space left"
         description: >
-          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}% available space left.
-
+          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }},
+          at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}%
+          available space left.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
-            expr: "(\n  node_filesystem_avail_bytes{fstype!=\"\",mountpoint!=\"\", ${node_selectors}} \n  /node_filesystem_size_bytes{fstype!=\"\",mountpoint!=\"\", ${node_selectors}}\n  *100\n  unless node_filesystem_readonly{fstype!=\"\",mountpoint!=\"\", ${node_selectors}} == 1\n)\n* on(instance) group_left(nodename) node_uname_info\n"
-        - datasource_uid: -100
-          ref_id: B
+            expr: |
+              (
+                node_filesystem_avail_bytes{fstype!="",mountpoint!="", ${node_selectors}} 
+                /node_filesystem_size_bytes{fstype!="",mountpoint!="", ${node_selectors}}
+                *100
+                unless node_filesystem_readonly{fstype!="",mountpoint!="", ${node_selectors}} == 1
+              )
+              * on(instance) group_left(nodename) node_uname_info
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B < 5"
       no_data_state: "NoData"
@@ -91,14 +92,13 @@
       annotations:
         summary: "Filesystem has less than 25% inodes left"
         description: >
-          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}%  available inodes left.
-
+          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }},
+          at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}% 
+          available inodes left.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               (
                 node_filesystem_files_free{fstype!="",mountpoint!="", ${node_selectors }}
@@ -107,17 +107,13 @@
                 unless node_filesystem_readonly{fstype!="",mountpoint!="", ${node_selectors}} == 1
               )
               * on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B < 25"
       no_data_state: "NoData"
@@ -129,14 +125,13 @@
       annotations:
         summary: "Filesystem has less than 5% inodes left"
         description: >
-          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}% available inodes left.
-
+          Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }},
+          at {{ $labels.nodename }} has only {{ printf "%.2f" $values.B.Value }}%
+          available inodes left.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               (
                 node_filesystem_files_free{fstype!="",mountpoint!="", ${node_selectors }}
@@ -145,17 +140,13 @@
                 unless node_filesystem_readonly{fstype!="",mountpoint!="", ${node_selectors}} == 1
               )
               * on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B < 5"
       no_data_state: "NoData"
@@ -170,14 +161,12 @@
       annotations:
         summary: "Network interface is reporting many receive errors"
         description: >
-          {{ $labels.nodename }} interface {{ $labels.device }} has encountered {{ printf "%.2f" $values.B.Value }}% receive errors in the last 5 minutes.
-
+          {{ $labels.nodename }} interface {{ $labels.device }} has encountered
+          {{ printf "%.2f" $values.B.Value }}% receive errors in the last 5 minutes.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               (
                 rate(node_network_receive_errs_total{${node_selectors}}[5m])
@@ -186,17 +175,13 @@
                 unless rate(node_network_receive_packets_total{${node_selectors}}[5m]) == 0
               )
               * on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 1"
       no_data_state: "NoData"
@@ -208,26 +193,27 @@
       annotations:
         summary: "Network interface is reporting many transmit errors"
         description: >
-          {{ $labels.nodename }} interface {{ $labels.device }} has encountered {{ printf "%.0f" $values.B.Value }} transmit errors in the last 5 minutes.
-
+          {{ $labels.nodename }} interface {{ $labels.device }} has encountered
+          {{ printf "%.0f" $values.B.Value }} transmit errors in the last 5 minutes.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
-            expr: "(\n  rate(node_network_transmit_errs_total{${node_selectors}}[5m]) \n  /rate(node_network_transmit_packets_total{${node_selectors}}[5m])\n  *100\n  unless rate(node_network_transmit_packets_total{${node_selectors}}[5m]) == 0\n)\n* on(instance) group_left(nodename) node_uname_info{${node_selectors}}\n"
-        - datasource_uid: -100
-          ref_id: B
+            expr: |
+              (
+                rate(node_network_transmit_errs_total{${node_selectors}}[5m]) 
+                /rate(node_network_transmit_packets_total{${node_selectors}}[5m])
+                *100
+                unless rate(node_network_transmit_packets_total{${node_selectors}}[5m]) == 0
+              )
+              * on(instance) group_left(nodename) node_uname_info{${node_selectors}}
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 1"
       no_data_state: "NoData"
@@ -240,25 +226,21 @@
         summary: "Number of conntrack are getting close to the limit"
         description: >
           {{ printf "%.0f" $values.B.Value }}% conntrack entries are used at {{ $labels.nodename }}.
-
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
-            expr: "node_nf_conntrack_entries{${node_selectors}} \n/node_nf_conntrack_entries_limit{${node_selectors}} \n*100\n"
-        - datasource_uid: -100
-          ref_id: "B"
+            expr: |
+              node_nf_conntrack_entries{${node_selectors}} 
+              /node_nf_conntrack_entries_limit{${node_selectors}} 
+              *100
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 75"
       no_data_state: "NoData"
@@ -273,29 +255,23 @@
       annotations:
         summary: "Node is under high CPU usage"
         description: >
-          CPU usage at {{ $labels.nodename }} has been above 90% for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}%.
-
+          CPU usage at {{ $labels.nodename }} has been above 90% for the last 5 minutes,
+          is currently at {{ printf "%.2f" $values.B.Value }}%.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{mode!="idle", ${node_selectors}}[5m])))
               *100
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 90"
       no_data_state: "NoData"
@@ -310,28 +286,23 @@
       annotations:
         summary: "Memory major page faults are occurring at very high rate"
         description: >
-          Memory major pages are occurring at very high rate at {{ $labels.nodename }},  500 major page faults per second for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}. Please check that there is enough memory available at this instance.
-
+          Memory major pages are occurring at very high rate at {{ $labels.nodename }}, 
+          500 major page faults per second for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}.
+          Please check that there is enough memory available at this instance.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               rate(node_vmstat_pgmajfault{${node_selectors}}[5m])
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 500"
       no_data_state: "NoData"
@@ -343,31 +314,25 @@
       annotations:
         summary: "Node is running out of memory"
         description: >
-          Memory is filling up at {{ $labels.nodename }}, has been above 75% for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}%.
-
+          Memory is filling up at {{ $labels.nodename }}, has been above 75% for the last 5 minutes,
+          is currently at {{ printf "%.2f" $values.B.Value }}%.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               (1 -
                 node_memory_MemAvailable_bytes{${node_selectors}}
                 /node_memory_MemTotal_bytes{${node_selectors}}
               )*100
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 75"
       no_data_state: "NoData"
@@ -382,28 +347,23 @@
       annotations:
         summary: "Disk IO queue is high"
         description: >
-          Disk IO queue (aqu-sq) is high on {{ $labels.device }} at {{ $labels.nodename }}, has been above 10 for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}. This symptom might indicate disk saturation.
-
+          Disk IO queue (aqu-sq) is high on {{ $labels.device }} at {{ $labels.nodename }},
+          has been above 10 for the last 5 minutes, is currently at {{ printf "%.2f" $values.B.Value }}.
+          This symptom might indicate disk saturation.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               rate(node_disk_io_time_weighted_seconds_total{device!="", ${node_selectors}}[5m])
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 10"
       no_data_state: "NoData"
@@ -418,26 +378,26 @@
       annotations:
         summary: "RAID Array is degraded"
         description: >
-          RAID array '{{ $labels.device }}' at {{ $labels.nodename }} is in degraded state due to one or more disks failures. Number of spare drives is insufficient to fix issue automatically.
-
+          RAID array '{{ $labels.device }}' at {{ $labels.nodename }} is
+          in degraded state due to one or more disks failures. Number of spare drives
+          is insufficient to fix issue automatically.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
-            expr: "(\n  node_md_disks_required{device!=\"\", ${node_selectors}} \n  - ignoring (state) (node_md_disks{state=\"active\",device!=\"\", ${node_selectors}}) \n)\n*on(instance) group_left(nodename) node_uname_info{${node_selectors}}\n"
-        - datasource_uid: -100
-          ref_id: B
+            expr: |
+              (
+                node_md_disks_required{device!="", ${node_selectors}} 
+                - ignoring (state) (node_md_disks{state="active",device!="", ${node_selectors}}) 
+              )
+              *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 0"
       no_data_state: "NoData"
@@ -449,28 +409,22 @@
       annotations:
         summary: "Failed device in RAID array"
         description: >
-          At least one device in RAID array at {{ $labels.nodename }} failed. Array '{{ $labels.device }}' needs attention and possibly a disk swap.
-
+          At least one device in RAID array at {{ $labels.nodename }} failed.
+          Array '{{ $labels.device }}' needs attention and possibly a disk swap.
       condition: A
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               node_md_disks{state="failed",device!="", ${node_selectors}}
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 0"
       no_data_state: "NoData"
@@ -482,28 +436,22 @@
       annotations:
         summary: "Clock skew detected"
         description: >
-          Clock at {{ $labels.nodename }} is out of sync by more than 0.05 seconds. Ensure NTP is configured correctly on this host.
-
+          Clock at {{ $labels.nodename }} is out of sync by more than 0.05 seconds.
+          Ensure NTP is configured correctly on this host.
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             expr: |
               abs(node_timex_offset_seconds{${node_selectors}})
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: last
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: math
             expression: "$B > 0.05"
       no_data_state: "NoData"
@@ -515,28 +463,22 @@
       annotations:
         summary: "Clock is not synchronizing"
         description: >
-          Clock at {{ $labels.nodename }} is not synchronising.  Ensure NTP is configured on this host.
-
+          Clock at {{ $labels.nodename }} is not synchronising. 
+          Ensure NTP is configured on this host.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               node_timex_maxerror_seconds{${node_selectors}}
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B >= 16"
       no_data_state: "NoData"
@@ -548,28 +490,22 @@
       annotations:
         summary: "Clock is in the error state"
         description: >
-          Clock at {{ $labels.nodename }} is in the error state.  Please check NTP is working on this host.
-
+          Clock at {{ $labels.nodename }} is in the error state. 
+          Please check NTP is working on this host.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               min_over_time(node_timex_sync_status{${node_selectors}}[5m])
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 0"
       no_data_state: "NoData"
@@ -582,27 +518,20 @@
         summary: "Node-exporter text file collector failed to scrape"
         description: >
           Node Exporter text file collector on {{ $labels.nodename }} failed to scrape.
-
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               node_textfile_scrape_error{${node_selectors}}
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -615,25 +544,22 @@
         summary: "Kernel is predicted to exhaust file descriptors limit soon"
         description: >
           File descriptors limit at {{ $labels.nodename }} is currently at {{ printf "%.2f" $values.B.Value }}%.
-
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
-            expr: "node_filefd_allocated{${node_selectors}}\n/node_filefd_maximum{${node_selectors}} \n*100\n*on(instance) group_left(nodename) node_uname_info{${node_selectors}}\n"
-        - datasource_uid: -100
-          ref_id: "B"
+            expr: |
+              node_filefd_allocated{${node_selectors}}
+              /node_filefd_maximum{${node_selectors}} 
+              *100
+              *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 70"
       no_data_state: "NoData"
@@ -646,25 +572,22 @@
         summary: "Kernel is predicted to exhaust file descriptors limit soon"
         description: >
           File descriptors limit at {{ $labels.instance }} is currently at {{ printf "%.2f" $values.B.Value }}%.
-
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
-            expr: "node_filefd_allocated{${node_selectors}}\n/node_filefd_maximum{${node_selectors}} \n*100\n*on(instance) group_left(nodename) node_uname_info{${node_selectors}}\n"
-        - datasource_uid: -100
-          ref_id: "B"
+            expr: |
+              node_filefd_allocated{${node_selectors}}
+              /node_filefd_maximum{${node_selectors}} 
+              *100
+              *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 90"
       no_data_state: "NoData"
@@ -677,27 +600,20 @@
         summary: "Systemd service has entered failed state"
         description: >
           Systemd service {{ $labels.name }} has entered failed state at {{ $labels.nodename }}.
-
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               node_systemd_unit_state{state="failed", ${node_selectors}}
               *on(instance) group_left(nodename) node_uname_info{${node_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"

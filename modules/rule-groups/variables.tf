@@ -12,6 +12,11 @@ variable "annotations" {
   default = {}
 }
 
+variable "datasource_uid" {
+  type    = string
+  default = ""
+}
+
 variable "static_rule_groups" {
   type = any
 }

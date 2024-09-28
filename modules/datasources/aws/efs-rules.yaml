@@ -10,31 +10,23 @@
         description: "EFS burst credit is lower than 500 GB."
       condition: Z
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             metricQueryType: 1
             metricEditorMode: 1
             sqlExpression: SELECT AVG(BurstCreditBalance) FROM "AWS/EFS" GROUP BY FileSystemId
             statistic: ""
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: min
-        - datasource_uid: -100
-          ref_id: C
+        - ref_id: C
           model:
-            refId: C
             type: math
             expression: $B/(1024*1024*1024*1024)
-        - datasource_uid: -100
-          ref_id: Z
+        - ref_id: Z
           model:
-            refId: Z
             type: threshold
             expression: C
             conditions:
@@ -54,25 +46,19 @@
         description: "EFS is reached 75% of the throughput limit."
       condition: C
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: A
+        - ref_id: A
           model:
-            refId: A
             metricQueryType: 1
             metricEditorMode: 1
             sqlExpression: SELECT AVG(PercentIOLimit) FROM "AWS/EFS" GROUP BY FileSystemId
             statistic: ""
-        - datasource_uid: -100
-          ref_id: B
+        - ref_id: B
           model:
-            refId: B
             type: reduce
             expression: A
             reducer: max
-        - datasource_uid: -100
-          ref_id: C
+        - ref_id: C
           model:
-            refId: C
             type: threshold
             expression: B
             conditions:

@@ -7,14 +7,12 @@
       annotations:
         summary: "Ceph metrics return NoData"
         description: >
-          The Ceph metrics has been no data for 5 minutes.  Please check if Ceph or Prometheus is working.
-
+          The Ceph metrics has been no data for 5 minutes. 
+          Please check if Ceph or Prometheus is working.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             expr: "absent(ceph_health_status) or vector(0)"
             instant: true
       no_data_state: "Alerting"
@@ -29,26 +27,20 @@
       annotations:
         summary: "Ceph is in the WARNING state"
         description: >
-          The cluster state has been HEALTH_WARN for more than 5 minutes. Please check 'ceph health detail' for more information.
-
+          The cluster state has been HEALTH_WARN for more than 5 minutes.
+          Please check 'ceph health detail' for more information.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_status{${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -59,25 +51,21 @@
     - name: ceph-health-error
       annotations:
         summary: "Ceph is in the ERROR state"
-        description: The cluster state has been HEALTH_ERROR for more than 5 minutes. Please check 'ceph health detail' for more information.
+        description:
+          The cluster state has been HEALTH_ERROR for more than 5 minutes.
+          Please check 'ceph health detail' for more information.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_status{${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 2"
       no_data_state: "NoData"
@@ -91,41 +79,31 @@
       annotations:
         summary: "Ceph monitor quorum is at risk"
         description: >
-          Quorum requires a more than one-half of monitors to be active. Without quorum the cluster will become inoperable, affecting all services and connected clients.
-
+          Quorum requires a more than one-half of monitors to be active.
+          Without quorum the cluster will become inoperable, affecting all services and connected clients.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-down"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               count(ceph_mon_quorum_status{${ceph_selectors}} == 1)
-        - datasource_uid: ${datasource_uid}
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             expr: |
               (floor(count(ceph_mon_metadata{${ceph_selectors}}) / 2) + 1)
-        - datasource_uid: -100
-          ref_id: "C"
+        - ref_id: "C"
           model:
-            refId: "C"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "D"
+        - ref_id: "D"
           model:
-            refId: "D"
             type: reduce
             expression: "B"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$C <= $D"
       no_data_state: "NoData"
@@ -139,22 +117,16 @@
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-down"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MON_DOWN", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -165,27 +137,21 @@
       annotations:
         summary: "Filesystem space on at least one monitor is critically low"
         description: >
-          The free space available to a monitor's store is critically low. You should increase the space available to the monitor(s).
-
+          The free space available to a monitor's store is critically low.
+          You should increase the space available to the monitor(s).
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-disk-crit"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MON_DISK_CRIT", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -196,27 +162,23 @@
       annotations:
         summary: "Clock skew detected among monitors"
         description: >
-          Ceph monitors rely on closely synchronized time to maintain quorum and cluster consistency. This event indicates that the time on at least one mon has drifted too far from the lead mon. Review cluster status with ceph -s. This will show which monitors are affected. Check the time sync status on each monitor host with 'ceph time-sync-status' and the state and peers of your ntpd or chrony daemon.
-
+          Ceph monitors rely on closely synchronized time to maintain quorum and cluster consistency.
+          This event indicates that the time on at least one mon has drifted too far from the lead mon.
+          Review cluster status with ceph -s. This will show which monitors are affected.
+          Check the time sync status on each monitor host with 'ceph time-sync-status' and the state and peers of your ntpd or chrony daemon.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-clock-skew"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MON_CLOCK_SKEW", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -233,24 +195,18 @@
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#mon-down"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_osd_up{${ceph_selectors}}
               * on(ceph_daemon) group_left(device_ids, instance) (ceph_disk_occupation{${ceph_selectors}})
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 0"
       no_data_state: "NoData"
@@ -263,22 +219,19 @@
         description: "OSD {{ $labels.ceph_daemon }} has exceeded 75% of its capacity."
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
-            expr: "ceph_osd_stat_bytes_used{${ceph_selectors}}/ceph_osd_stat_bytes{${ceph_selectors}}\n* on(ceph_daemon) group_left(device_ids, instance) (ceph_disk_occupation{${ceph_selectors}}) \n* 100\n"
-        - datasource_uid: -100
-          ref_id: "B"
+            expr: |
+              ceph_osd_stat_bytes_used{${ceph_selectors}}/ceph_osd_stat_bytes{${ceph_selectors}}
+              * on(ceph_daemon) group_left(device_ids, instance) (ceph_disk_occupation{${ceph_selectors}}) 
+              * 100
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 75"
       no_data_state: "NoData"
@@ -289,27 +242,22 @@
       annotations:
         summary: "OSD is too full for backfill operations"
         description: >
-          An OSD has reached the BACKFILL FULL threshold. This will prevent rebalance operations from completing.  Use 'ceph health detail' and 'ceph osd df' to identify the problem.  To resolve, add capacity to the affected OSD's failure domain, restore down/out OSDs, or delete unwanted data.
-
+          An OSD has reached the BACKFILL FULL threshold. This will prevent rebalance operations from completing. 
+          Use 'ceph health detail' and 'ceph osd df' to identify the problem. 
+          To resolve, add capacity to the affected OSD's failure domain, restore down/out OSDs, or delete unwanted data.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#osd-backfillfull"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="OSD_BACKFILLFULL", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -323,22 +271,16 @@
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#osd-too-many-repairs"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="OSD_TOO_MANY_REPAIRS", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -352,27 +294,21 @@
       annotations:
         summary: "Ceph filesystem is damaged"
         description: >
-          Filesystem metadata has been corrupted. Data may be inaccessible.  Analyze metrics from the MDS daemon admin socket, or escalate to support.
-
+          Filesystem metadata has been corrupted. Data may be inaccessible. 
+          Analyze metrics from the MDS daemon admin socket, or escalate to support.
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages#cephfs-health-messages"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MDS_DAMAGE", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -386,22 +322,16 @@
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages/#mds-all-down"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MDS_ALL_DOWN", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -411,28 +341,22 @@
     - name: "ceph-mds-degraded"
       annotations:
         description: >
-          One or more metadata daemons (MDS ranks) are failed or in a damaged state. At best the filesystem is partially available, at worst the filesystem is completely unusable.
-
+          One or more metadata daemons (MDS ranks) are failed or in a damaged state.
+          At best the filesystem is partially available, at worst the filesystem is completely unusable.
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages/#fs-degraded"
         summary: "CephFS filesystem is degraded"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="FS_DEGRADED", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -443,27 +367,21 @@
       annotations:
         summary: "Ceph filesystem standby daemons too few"
         description: >
-          The minimum number of standby daemons required by standby_count_wanted is less than the current number of standby daemons. Adjust the standby count or increase the number of MDS daemons.
-
+          The minimum number of standby daemons required by standby_count_wanted is less than the current number of standby daemons.
+          Adjust the standby count or increase the number of MDS daemons.
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages/#mds-insufficient-standby"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MDS_INSUFFICIENT_STANDBY", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -474,27 +392,21 @@
       annotations:
         summary: "MDS daemon failed, no further standby available"
         description: >
-          An MDS daemon has failed, leaving only one active rank and no available standby. Investigate the cause of the failure or add a standby MDS.
-
+          An MDS daemon has failed, leaving only one active rank and no available standby.
+          Investigate the cause of the failure or add a standby MDS.
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages/#fs-with-failed-mds"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="FS_WITH_FAILED_MDS", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -505,27 +417,21 @@
       annotations:
         summary: "Ceph filesystem in read only mode due to write error(s)"
         description: >
-          The filesystem has switched to READ ONLY due to an unexpected error when writing to the metadata pool. Either analyze the output from the MDS daemon admin socket, or escalate to support.
-
+          The filesystem has switched to READ ONLY due to an unexpected error when writing to the metadata pool.
+          Either analyze the output from the MDS daemon admin socket, or escalate to support.
         documentation: "https://docs.ceph.com/en/latest/cephfs/health-messages#cephfs-health-messages"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="MDS_DAMAGE", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -539,27 +445,22 @@
       annotations:
         summary: "A manager module has recently crashed"
         description: >
-          One or more mgr modules have crashed and have yet to be acknowledged by an administrator. A crashed module may impact functionality within the cluster. Use the 'ceph crash' command to determine which module has failed, and archive it to acknowledge the failure.
-
+          One or more mgr modules have crashed and have yet to be acknowledged by an administrator.
+          A crashed module may impact functionality within the cluster.
+          Use the 'ceph crash' command to determine which module has failed, and archive it to acknowledge the failure.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#recent-mgr-module-crash"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: ceph_health_detail{name="RECENT_MGR_MODULE_CRASH", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -573,28 +474,22 @@
       annotations:
         summary: "Placement group(s) is inactive"
         description: >
-          Placement group {{ $labels.name }} have been inactive for more than 5 minutes. Inactive placement group is not able to serve read/write requests.
-
+          Placement group {{ $labels.name }} have been inactive for more than 5 minutes.
+          Inactive placement group is not able to serve read/write requests.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               (ceph_pg_total{${ceph_selectors}} - ceph_pg_active{${ceph_selectors}})
               * on(pool_id) group_left(name) ceph_pool_metadata{${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 0"
       no_data_state: "NoData"
@@ -605,28 +500,22 @@
       annotations:
         summary: "Placement group(s) is marked unclean"
         description: >
-          Placement group {{ $labels.name }} have been unclean for more than 5 minutes. Unclean PGs have not recovered from a previous failure.
-
+          Placement group {{ $labels.name }} have been unclean for more than 5 minutes.
+          Unclean PGs have not recovered from a previous failure.
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               (ceph_pg_total{${ceph_selectors}} - ceph_pg_clean{${ceph_selectors}})
               * on(pool_id) group_left(name) ceph_pool_metadata{${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B > 0"
       no_data_state: "NoData"
@@ -637,28 +526,24 @@
       annotations:
         summary: "Placement group is damaged, manual intervention needed"
         description: >
-          During data consistency checks (scrub), at least one PG has been flagged as being damaged or inconsistent. Check to see which PG is affected, and attempt a manual repair if necessary.  To list problematic placement groups, use 'rados list-inconsistent-pg <pool>'.  To repair PGs use the 'ceph pg repair <pg_num>' command.
-
+          During data consistency checks (scrub), at least one PG has been flagged as being damaged or inconsistent.
+          Check to see which PG is affected, and attempt a manual repair if necessary. 
+          To list problematic placement groups, use 'rados list-inconsistent-pg <pool>'. 
+          To repair PGs use the 'ceph pg repair <pg_num>' command.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-damaged"
       condition: "A"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name=~"PG_DAMAGED|OSD_SCRUB_ERRORS", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -669,28 +554,22 @@
       annotations:
         summary: "OSDs are too full for recovery"
         description: >
-          Data redundancy is at risk since one or more OSDs are at or above the 'full' threshold.  Add more capacity to the cluster, restore down/out OSDs, or delete unwanted data.
-
+          Data redundancy is at risk since one or more OSDs are at or above the 'full' threshold. 
+          Add more capacity to the cluster, restore down/out OSDs, or delete unwanted data.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-recovery-full"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="PG_RECOVERY_FULL", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -701,28 +580,22 @@
       annotations:
         summary: "PG is unavailable, blocking I/O"
         description: >
-          Data availability is reduced, impacting the cluster's ability to service I/O.  One or more placement groups (PGs) are in a state that blocks I/O.
-
+          Data availability is reduced, impacting the cluster's ability to service I/O. 
+          One or more placement groups (PGs) are in a state that blocks I/O.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-availability"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="PG_AVAILABILITY", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -733,28 +606,22 @@
       annotations:
         summary: "Backfill operations are blocked due to lack of free space"
         description: >
-          Data redundancy may be at risk due to lack of free space within the cluster. One or more OSDs have reached the 'backfillfull' threshold. Add more capacity, or delete unwanted data.
-
+          Data redundancy may be at risk due to lack of free space within the cluster.
+          One or more OSDs have reached the 'backfillfull' threshold. Add more capacity, or delete unwanted data.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-backfill-full"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="PG_BACKFILL_FULL", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -765,28 +632,25 @@
       annotations:
         summary: "Placement groups per OSD is too high"
         description: >
-          The number of placement groups per OSD is too high (exceeds the mon_max_pg_per_osd setting). Check that the pg_autoscaler has not been disabled for any pools with 'ceph osd pool autoscale-status',  and that the profile selected is appropriate. You may also adjust the target_size_ratio of a pool to guide the autoscaler  based on the expected relative size of the pool ('ceph osd pool set cephfs.cephfs.meta target_size_ratio .1') or set  the pg_autoscaler mode to 'warn' and adjust pg_num appropriately for one or more pools.
-
+          The number of placement groups per OSD is too high (exceeds the mon_max_pg_per_osd setting).
+          Check that the pg_autoscaler has not been disabled for any pools with 'ceph osd pool autoscale-status', 
+          and that the profile selected is appropriate. You may also adjust the target_size_ratio of a pool to guide the autoscaler 
+          based on the expected relative size of the pool ('ceph osd pool set cephfs.cephfs.meta target_size_ratio .1') or set 
+          the pg_autoscaler mode to 'warn' and adjust pg_num appropriately for one or more pools.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks/#too-many-pgs"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="TOO_MANY_PGS", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -797,28 +661,24 @@
       annotations:
         summary: "Placement group(s) have not been scrubbed"
         description: >
-          One or more PGs have not been scrubbed recently. Scrubs check metadata integrity, protecting against bit-rot.  They check that metadata is consistent across data replicas. When PGs miss their scrub interval, it may indicate  that the scrub window is too small, or PGs were not in a 'clean' state during the scrub window. You can manually initiate a scrub with: ceph pg scrub <pgid>.
-
+          One or more PGs have not been scrubbed recently. Scrubs check metadata integrity, protecting against bit-rot. 
+          They check that metadata is consistent across data replicas. When PGs miss their scrub interval, it may indicate 
+          that the scrub window is too small, or PGs were not in a 'clean' state during the scrub window.
+          You can manually initiate a scrub with: ceph pg scrub <pgid>.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-not-scrubbed"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="PG_NOT_SCRUBBED", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -829,28 +689,23 @@
       annotations:
         summary: "Placement group(s) have not been deep scrubbed"
         description: >
-          One or more PGs have not been deep scrubbed recently. Deep scrubs protect against bit-rot. They compare data replicas to ensure consistency. When PGs miss their deep scrub interval, it may indicate that the window is too small or PGs were not in a 'clean' state during the deep-scrub window.
-
+          One or more PGs have not been deep scrubbed recently. Deep scrubs protect against bit-rot.
+          They compare data replicas to ensure consistency. When PGs miss their deep scrub interval, it may indicate
+          that the window is too small or PGs were not in a 'clean' state during the deep-scrub window.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pg-not-deep-scrubbed"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="PG_NOT_DEEP_SCRUBBED", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -866,22 +721,18 @@
         description: "Pool '{{ $labels.name }}' will be full in less than 5 days assuming the average fill-up rate of the past 48 hours."
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
-            expr: "(predict_linear(ceph_pool_percent_used{${ceph_selectors}}[2d], 3600*24*5) \n* on(pool_id) group_right() ceph_pool_metadata{${ceph_selectors}})\n"
-        - datasource_uid: -100
-          ref_id: "B"
+            expr: |
+              (predict_linear(ceph_pool_percent_used{${ceph_selectors}}[2d], 3600*24*5) 
+              * on(pool_id) group_right() ceph_pool_metadata{${ceph_selectors}})
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B >= 95"
       no_data_state: "NoData"
@@ -892,28 +743,22 @@
       annotations:
         summary: "Pool is full - writes are blocked"
         description: >
-          A pool has reached its MAX quota, or OSDs supporting the pool have reached the FULL threshold. Until this is resolved, writes to the pool will be blocked.
-
+          A pool has reached its MAX quota, or OSDs supporting the pool have reached the FULL threshold.
+          Until this is resolved, writes to the pool will be blocked.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#pool-full"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="POOL_FULL", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -924,28 +769,25 @@
       annotations:
         summary: "One or more Ceph pools are nearly full"
         description: >
-          A pool has exceeded the warning (percent full) threshold, or OSDs supporting the pool have reached the NEARFULL threshold. Writes may continue, but you are at risk of the pool going read-only if more capacity isn't made available. Determine the affected pool with 'ceph df detail', looking at QUOTA BYTES and STORED. Increase the pool's quota, or add capacity to the cluster first then increase the pool's quota (e.g. ceph osd pool set quota <pool_name> max_bytes <bytes>). Also ensure that the balancer is active.
-
+          A pool has exceeded the warning (percent full) threshold, or OSDs supporting the pool have reached the NEARFULL threshold.
+          Writes may continue, but you are at risk of the pool going read-only if more capacity isn't made available.
+          Determine the affected pool with 'ceph df detail', looking at QUOTA BYTES and STORED.
+          Increase the pool's quota, or add capacity to the cluster first then increase the pool's quota (e.g. ceph osd pool set quota <pool_name> max_bytes <bytes>).
+          Also ensure that the balancer is active.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks/#pool-near-full"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="POOL_NEAR_FULL", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -959,28 +801,23 @@
       annotations:
         summary: "Object(s) marked UNFOUND"
         description: >
-          The latest version of a RADOS object can not be found, even though all OSDs are up. I/O requests for this object from clients will block (hang). Resolving this issue may require the object to be rolled back to a prior version manually, and manually verified.
-
+          The latest version of a RADOS object can not be found, even though all OSDs are up.
+          I/O requests for this object from clients will block (hang).
+          Resolving this issue may require the object to be rolled back to a prior version manually, and manually verified.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks#object-unfound"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="OBJECT_UNFOUND", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"
@@ -994,28 +831,23 @@
       annotations:
         summary: "One or more Ceph daemons have crashed, and are pending acknowledgement"
         description: >
-          One or more daemons have crashed recently, and need to be acknowledged. This notification ensures that software crashes do not go unseen. To acknowledge a crash, use the 'ceph crash archive <id>' command.
-
+          One or more daemons have crashed recently, and need to be acknowledged.
+          This notification ensures that software crashes do not go unseen.
+          To acknowledge a crash, use the 'ceph crash archive <id>' command.
         documentation: "https://docs.ceph.com/en/latest/rados/operations/health-checks/#recent-crash"
       condition: "Z"
       datas:
-        - datasource_uid: ${datasource_uid}
-          ref_id: "A"
+        - ref_id: "A"
           model:
-            refId: "A"
             expr: |
               ceph_health_detail{name="RECENT_CRASH", ${ceph_selectors}}
-        - datasource_uid: -100
-          ref_id: "B"
+        - ref_id: "B"
           model:
-            refId: "B"
             type: reduce
             expression: "A"
             reducer: last
-        - datasource_uid: -100
-          ref_id: "Z"
+        - ref_id: "Z"
           model:
-            refId: "Z"
             type: math
             expression: "$B == 1"
       no_data_state: "NoData"

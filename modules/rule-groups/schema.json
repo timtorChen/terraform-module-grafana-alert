@@ -91,7 +91,6 @@
                   }
                 },
                 "required": [
-                  "datasource_uid",
                   "ref_id",
                   "model"
                 ]
