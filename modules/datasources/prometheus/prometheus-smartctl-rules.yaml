@@ -33,7 +33,7 @@
       datas:
         - ref_id: A
           model:
-            expr: smartprom_smart_passed{${smartctl_selectors}}
+            expr: smartprom_smart_passed{${smartprom_selectors}}
         - ref_id: B
           model:
             type: reduce
@@ -62,9 +62,9 @@
         - ref_id: A
           model:
             expr: |
-              smartprom_temperature_celsius{${smartctl_selectors}}
+              smartprom_temperature_celsius{${smartprom_selectors}}
               or
-              smartprom_temperature{${smartctl_selectors}}
+              smartprom_temperature{${smartprom_selectors}}
         - ref_id: B
           model:
             type: reduce
@@ -93,9 +93,9 @@
         - ref_id: A
           model:
             expr: |
-              smartprom_percent_lifetime_remain{${smartctl_selectors}}
+              smartprom_percent_lifetime_remain{${smartprom_selectors}}
               or
-              (100 - smartprom_percentage_used{${smartctl_selectors}})
+              (100 - smartprom_percentage_used{${smartprom_selectors}})
         - ref_id: B
           model:
             type: reduce
@@ -121,9 +121,9 @@
         - ref_id: A
           model:
             expr: |
-              smartprom_percent_lifetime_remain{${smartctl_selectors}}
+              smartprom_percent_lifetime_remain{${smartprom_selectors}}
               or
-              (100 - smartprom_percentage_used{${smartctl_selectors}})
+              (100 - smartprom_percentage_used{${smartprom_selectors}})
         - ref_id: B
           model:
             type: reduce
@@ -152,8 +152,8 @@
         - ref_id: A
           model:
             expr: |
-              smartprom_available_spare{${smartctl_selectors}}
-              - smartprom_available_spare_threshold{${smartctl_selectors}}
+              smartprom_available_spare{${smartprom_selectors}}
+              - smartprom_available_spare_threshold{${smartprom_selectors}}
         - ref_id: B
           model:
             type: reduce
