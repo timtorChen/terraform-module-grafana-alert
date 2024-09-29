@@ -15,7 +15,7 @@ No providers.
 | <a name="module_etcd"></a> [etcd](#module\_etcd) | ../../rule-groups | n/a |
 | <a name="module_kubernetes"></a> [kubernetes](#module\_kubernetes) | ../../rule-groups | n/a |
 | <a name="module_node"></a> [node](#module\_node) | ../../rule-groups | n/a |
-| <a name="module_smartctl"></a> [smartctl](#module\_smartctl) | ../../rule-groups | n/a |
+| <a name="module_smartprom"></a> [smartprom](#module\_smartprom) | ../../rule-groups | n/a |
 
 ## Resources
 
@@ -42,10 +42,10 @@ No resources.
 | <a name="input_node_folder_name"></a> [node\_folder\_name](#input\_node\_folder\_name) | n/a | `string` | `"node-exporter"` | no |
 | <a name="input_node_rule_groups"></a> [node\_rule\_groups](#input\_node\_rule\_groups) | n/a | `any` | `null` | no |
 | <a name="input_node_selectors"></a> [node\_selectors](#input\_node\_selectors) | n/a | `list(string)` | `[]` | no |
-| <a name="input_enable_smartctl_alert"></a> [enable\_smartctl\_alert](#input\_enable\_smartctl\_alert) | smartctl-exporter | `bool` | `false` | no |
-| <a name="input_smartctl_folder_name"></a> [smartctl\_folder\_name](#input\_smartctl\_folder\_name) | n/a | `string` | `"prometheus-smartctl"` | no |
-| <a name="input_smartctl_rule_groups"></a> [smartctl\_rule\_groups](#input\_smartctl\_rule\_groups) | n/a | `any` | `null` | no |
-| <a name="input_smartctl_selectors"></a> [smartctl\_selectors](#input\_smartctl\_selectors) | n/a | `list(string)` | `[]` | no |
+| <a name="input_enable_smartprom_alert"></a> [enable\_smartprom\_alert](#input\_enable\_smartprom\_alert) | matusnovak/prometheus-smartctl | `bool` | `false` | no |
+| <a name="input_smartprom_folder_name"></a> [smartprom\_folder\_name](#input\_smartprom\_folder\_name) | n/a | `string` | `"smartprom"` | no |
+| <a name="input_smartprom_rule_groups"></a> [smartprom\_rule\_groups](#input\_smartprom\_rule\_groups) | n/a | `any` | `null` | no |
+| <a name="input_smartprom_selectors"></a> [smartprom\_selectors](#input\_smartprom\_selectors) | n/a | `list(string)` | `[]` | no |
 | <a name="input_enable_kubernetes_alert"></a> [enable\_kubernetes\_alert](#input\_enable\_kubernetes\_alert) | kubernetes | `bool` | `false` | no |
 | <a name="input_kubernetes_folder_name"></a> [kubernetes\_folder\_name](#input\_kubernetes\_folder\_name) | n/a | `string` | `"kubernetes"` | no |
 | <a name="input_kubernetes_rule_groups"></a> [kubernetes\_rule\_groups](#input\_kubernetes\_rule\_groups) | n/a | `any` | `null` | no |

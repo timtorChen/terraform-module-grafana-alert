@@ -5,10 +5,10 @@
   rules:
     - name: "smartprom-no-data"
       annotations:
-        summary: "Smartctl-exporter metrics returns NoData"
+        summary: "prometheus-smartctl metrics returns NoData"
         description: >-
-          Smartctl-exporter metrics has been no data for 5 minutes.
-          Please check if smartctl-exporter or Prometheus is working.
+          prometheus-smartctl metrics has been no data for 5 minutes.
+          Please check if prometheus-smartctl or Prometheus is working.
       condition: "Z"
       datas:
         - ref_id: "Z"

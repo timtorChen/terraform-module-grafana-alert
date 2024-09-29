@@ -85,23 +85,23 @@ variable "node_selectors" {
   default = []
 }
 
-# smartctl-exporter
-variable "enable_smartctl_alert" {
+# matusnovak/prometheus-smartctl
+variable "enable_smartprom_alert" {
   type    = bool
   default = false
 }
 
-variable "smartctl_folder_name" {
+variable "smartprom_folder_name" {
   type    = string
-  default = "prometheus-smartctl"
+  default = "smartprom"
 }
 
-variable "smartctl_rule_groups" {
+variable "smartprom_rule_groups" {
   type    = any
   default = null
 }
 
-variable "smartctl_selectors" {
+variable "smartprom_selectors" {
   type    = list(string)
   default = []
 }

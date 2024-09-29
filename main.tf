@@ -26,10 +26,10 @@ module "prometheus" {
   node_rule_groups  = var.node_rule_groups
   node_selectors    = var.node_selectors
 
-  enable_smartctl_alert = var.enable_smartctl_alert
-  smartctl_folder_name  = "${var.folder_prefix}${var.smartctl_folder_name}"
-  smartctl_rule_groups  = var.smartctl_rule_groups
-  smartctl_selectors    = var.smartctl_selectors
+  enable_smartprom_alert = var.enable_smartprom_alert
+  smartprom_folder_name  = "${var.folder_prefix}${var.smartprom_folder_name}"
+  smartprom_rule_groups  = var.smartprom_rule_groups
+  smartprom_selectors    = var.smartprom_selectors
 }
 
 module "aws" {
@@ -50,7 +50,7 @@ locals {
     var.enable_etcd_alert ||
     var.enable_kubernetes_alert ||
     var.enable_node_alert ||
-    var.enable_smartctl_alert
+    var.enable_smartprom_alert
   )
   enable_aws_module = (
     var.enable_efs_alert
