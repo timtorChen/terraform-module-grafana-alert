@@ -1,6 +1,8 @@
 module "kubernetes" {
-  count          = var.enable_kubernetes_alert ? 1 : 0
-  source         = "../../rule-groups"
+  count   = var.enable_kubernetes_alert ? 1 : 0
+  source  = "timtorChen/grafana-rule-groups/module"
+  version = "0.0.1"
+
   folder_name    = var.kubernetes_folder_name
   annotations    = var.annotations
   labels         = var.labels

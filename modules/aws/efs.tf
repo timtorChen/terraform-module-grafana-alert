@@ -1,6 +1,8 @@
 module "efs" {
-  count          = var.enable_efs_alert ? 1 : 0
-  source         = "../../rule-groups"
+  count   = var.enable_efs_alert ? 1 : 0
+  source  = "timtorChen/grafana-rule-groups/module"
+  version = "0.0.1"
+
   folder_name    = var.efs_folder_name
   annotations    = var.annotations
   labels         = var.labels

@@ -11,11 +11,11 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_ceph"></a> [ceph](#module\_ceph) | ../../rule-groups | n/a |
-| <a name="module_etcd"></a> [etcd](#module\_etcd) | ../../rule-groups | n/a |
-| <a name="module_kubernetes"></a> [kubernetes](#module\_kubernetes) | ../../rule-groups | n/a |
-| <a name="module_node"></a> [node](#module\_node) | ../../rule-groups | n/a |
-| <a name="module_smartprom"></a> [smartprom](#module\_smartprom) | ../../rule-groups | n/a |
+| <a name="module_ceph"></a> [ceph](#module\_ceph) | timtorChen/grafana-rule-groups/module | 0.0.1 |
+| <a name="module_etcd"></a> [etcd](#module\_etcd) | timtorChen/grafana-rule-groups/module | 0.0.1 |
+| <a name="module_kubernetes"></a> [kubernetes](#module\_kubernetes) | timtorChen/grafana-rule-groups/module | 0.0.1 |
+| <a name="module_node"></a> [node](#module\_node) | timtorChen/grafana-rule-groups/module | 0.0.1 |
+| <a name="module_smartprom"></a> [smartprom](#module\_smartprom) | timtorChen/grafana-rule-groups/module | 0.0.1 |
 
 ## Resources
 

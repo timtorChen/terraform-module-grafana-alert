@@ -1,6 +1,6 @@
 module "prometheus" {
   count  = local.enable_prometheus_module ? 1 : 0
-  source = "./modules/datasources/prometheus"
+  source = "./modules/prometheus"
 
   datasource_uid = var.prom_datasource_uid
   contact_point  = var.prom_contact_point
@@ -34,7 +34,7 @@ module "prometheus" {
 
 module "aws" {
   count  = local.enable_aws_module ? 1 : 0
-  source = "./modules/datasources/aws"
+  source = "./modules/aws"
 
   datasource_uid   = var.aws_datasource_uid
   contact_point    = var.aws_contact_point

@@ -2,7 +2,7 @@
 
 ⚠️ This project is still under development; use it with caution.
 
-Terraform module to create grafana-alerts.
+Terraform module to create grafana alerts.
 
 ## Usage
 
@@ -21,7 +21,7 @@ resource "grafana_data_source" "aws" {
 
 module "grafana-alert" {
   source  = "timtorChen/grafana-alert/module"
-  version = "~> 0.2.0"
+  version = "~> 0.4.0"
 
   prom_datasource_uid = grafana_data_source.prometheus.uid
   enable_ceph_alert   = true

@@ -11,7 +11,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_efs"></a> [efs](#module\_efs) | ../../rule-groups | n/a |
+| <a name="module_efs"></a> [efs](#module\_efs) | timtorChen/grafana-rule-groups/module | 0.0.1 |
 
 ## Resources
 
